@@ -511,3 +511,41 @@ async def letta_chat(
     except Exception as e:
         logger.error(f"Error in Letta chat: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
+
+@app.get("/api/letta/memory/{user_id}")
+async def get_letta_memory(
+    user_id: str = Path(..., description="User ID")
+):
+    """
+    Get user's Letta memory profile
+    """
+    if not LETTA_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Letta service is not available")
+    
+    try:
+        logger.info(f"Getting Letta memory for user {user_id}")
+        
+        memory = await letta_coach.get_user_memory(user_id)
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": "Memory profile retrieved",
+            "data": {
+                "user_id": memory.user_id,
+                "vocal_personality": memory.vocal_personality,
+                "common_issues": memory.common_issues,
+                "successful_exercises": memory.successful_exercises,
+                "progress_patterns": memory.progress_patterns,
+                "conversation_count": memory.conversation_count,
+                "last_conversation": memory.last_conversation.isoformat() if memory.last_conversation else None,
+                "created_at": memory.created_at.isoformat(),
+                "updated_at": memory.updated_at.isoformat()
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting Letta memory: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get memory: {str(e)}")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8080) 
