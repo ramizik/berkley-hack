@@ -81,3 +81,97 @@ async def startup_event():
 async def root():
     """Health check endpoint"""
     return {"message": "Vocal Coach AI Backend is running!", "status": "healthy"}
+
+@app.post("/analyze-voice")
+async def analyze_voice(
+    audio: UploadFile = File(...),
+    mean_pitch: Optional[float] = Form(None),
+    user_id: Optional[str] = Form(None),
+    session_id: Optional[str] = Form(None)
+):
+    """
+    Analyze voice recording and return vocal metrics
+    
+    Args:
+        audio: Audio file (WAV, MP3, etc.)
+        mean_pitch: Optional mean pitch from frontend analysis
+        user_id: Optional user ID for tracking
+        session_id: Optional session ID for tracking
+        
+    Returns:
+        JSON with vocal analysis results
+    """
+    try:
+        logger.info(f"Received voice analysis request: {audio.filename}")
+        if user_id:
+            logger.info(f"User ID: {user_id}")
+        if session_id:
+            logger.info(f"Session ID: {session_id}")
+        
+        # Validate file type
+        if not audio.filename.lower().endswith(('.wav', '.mp3', '.m4a', '.webm')):
+            raise HTTPException(status_code=400, detail="Unsupported audio format")
+        
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{audio.filename.split('.')[-1]}") as temp_file:
+            # Write uploaded file to temporary location
+            content = await audio.read()
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Analyze the audio file
+            logger.info(f"Starting analysis of {temp_file_path}")
+            analysis_results = await voice_analyzer.analyze_audio_file(temp_file_path, mean_pitch)
+            
+            # Log the results
+            logger.info(f"Analysis completed successfully: {analysis_results}")
+            
+            # Save to database if user_id is provided
+            if user_id and supabase:
+                try:
+                    session_data = {
+                        'id': session_id or f"session_{int(datetime.now().timestamp())}",
+                        'user_id': user_id,
+                        'created_at': datetime.now().isoformat(),
+                        'username': 'User',  # Default username
+                        'voice_recorded': True,
+                        'voice_type': analysis_results.get('voice_type'),
+                        'lowest_note': analysis_results.get('lowest_note'),
+                        'highest_note': analysis_results.get('highest_note'),
+                        'mean_pitch': analysis_results.get('mean_pitch'),
+                        'vibrato_rate': analysis_results.get('vibrato_rate'),
+                        'jitter': analysis_results.get('jitter'),
+                        'shimmer': analysis_results.get('shimmer'),
+                        'dynamics': analysis_results.get('dynamics'),
+                    }
+                    
+                    # Insert into vocal_analysis_history
+                    result = supabase.table('vocal_analysis_history').insert(session_data).execute()
+                    logger.info(f"Session saved to database: {session_data['id']}")
+                    
+                except Exception as db_error:
+                    logger.error(f"Failed to save session to database: {str(db_error)}")
+                    # Don't fail the request if database save fails
+            
+            # Return in format expected by frontend
+            return JSONResponse(content={
+                "success": True,
+                "message": "Voice analysis completed successfully",
+                "data": analysis_results,
+                "file_name": audio.filename,
+                "file_size": len(content),
+                "file_type": audio.content_type,
+                "user_id": user_id,
+                "session_id": session_id
+            })
+            
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                logger.info(f"Cleaned up temporary file: {temp_file_path}")
+    
+    except Exception as e:
+        logger.error(f"Error in voice analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
