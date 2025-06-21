@@ -453,3 +453,61 @@ async def start_letta_conversation(
     except Exception as e:
         logger.error(f"Error starting Letta conversation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to start conversation: {str(e)}")
+    
+@app.post("/api/letta/conversation/chat")
+async def letta_chat(
+    conversation_id: str = Form(...),
+    user_id: str = Form(...),
+    message: str = Form(...)
+):
+    """
+    Send a message to Letta and get response
+    """
+    if not LETTA_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Letta service is not available")
+    
+    try:
+        logger.info(f"Letta chat message from user {user_id} in conversation {conversation_id}")
+        
+        # Retrieve context from cache
+        context = conversation_contexts.get(conversation_id)
+        
+        if not context:
+            # If context not found, try to rebuild it (e.g., if server restarted)
+            logger.warning(f"Context for conversation {conversation_id} not found in cache. Rebuilding.")
+            context = await letta_coach.start_conversation(
+                user_id=user_id,
+                conversation_type=ConversationType.DAILY_FEEDBACK
+                # Note: The specific date context might be lost on rebuild
+            )
+            conversation_contexts[conversation_id] = context
+
+        # Generate response
+        response = await letta_coach.generate_response(context, message)
+        
+        # Update cache with the latest context state (e.g., conversation history)
+        conversation_contexts[conversation_id] = context
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": "Letta response generated",
+            "data": {
+                "conversation_id": conversation_id,
+                "response": {
+                    "message": response.message,
+                    "suggestions": response.suggestions,
+                    "follow_up_questions": response.follow_up_questions,
+                    "exercise_recommendations": response.exercise_recommendations,
+                    "emotional_tone": response.emotional_tone
+                },
+                "context": {
+                    "fetch_ai_report_available": context.fetch_ai_report is not None,
+                    "practice_sessions": context.fetch_ai_report.get("practice_sessions", 0) if context.fetch_ai_report else 0,
+                    "vocal_insights_available": bool(context.vocal_context)
+                }
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in Letta chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
