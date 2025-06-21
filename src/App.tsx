@@ -9,8 +9,8 @@ import TopNav from "./components/layout/TopNav";
 import Dashboard from "./pages/Dashboard";
 import Lessons from "./pages/Lessons";
 import Practice from "./pages/Practice";
-import LiveCoach from './pages/LiveCoach';
-import VoiceAssistant from './pages/VoiceAssistant';
+import LiveCoach from "./pages/LiveCoach";
+import VoiceAssistant from "./pages/VoiceAssistant";
 import { VocalProfileProvider } from "./context/VocalProfileContext";
 
 function App() {
@@ -83,11 +83,30 @@ function App() {
                 }
               />
 
-              <Route path="/voice-assistant" element={
-                              <ProtectedRoute>
-                                <VoiceAssistant />
-                              </ProtectedRoute>
-                            } />
+              <Route
+                path="/voice-assistant"
+                element={
+                  <ProtectedRoute>
+                    <VoiceAssistant />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/progress"
+                element={
+                  <ProtectedRoute>
+                    <div className="min-h-screen">
+                      <TopNav />
+                      <main className="p-6">
+                        <Progress />
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+
+              
             </Routes>
           </div>
         </Router>
