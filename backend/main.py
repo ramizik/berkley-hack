@@ -175,3 +175,17 @@ async def analyze_voice(
     except Exception as e:
         logger.error(f"Error in voice analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Live Coach integration"""
+    return JSONResponse(content={
+        "status": "healthy",
+        "service": "vocal-coach-ai-backend",
+        "endpoints": [
+            "/analyze-voice",
+            "/api/vocal-reports/{user_id}/{date}",
+            "/api/agent/status"
+        ],
+        "timestamp": datetime.now().isoformat()
+    })
