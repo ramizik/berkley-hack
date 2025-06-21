@@ -54,6 +54,109 @@ body::after {
   }
 }
 
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-primary;
+}
+
+.gradient-bg {
+  @apply bg-gradient-primary;
+}
+
+.gradient-bg-secondary {
+  @apply bg-gradient-secondary;
+}
+
+.card {
+  @apply bg-slate-800/40 backdrop-blur-md rounded-xl border border-slate-600/30 p-6 hover:border-purple/50 transition-all duration-300;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.nav-link {
+  @apply px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200;
+}
+
+.nav-link-active {
+  @apply bg-gradient-primary text-white shadow-lg;
+}
+
+.nav-link-inactive {
+  @apply text-gray-300 hover:text-white hover:bg-slate-700/50;
+}
+
+.page-transition {
+  @apply animate-fade-in;
+}
+
+.floating-pattern {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-pattern:nth-child(1) {
+  top: 10%;
+  left: 10%;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(45deg, #7c3aed, #dc2626);
+  animation-delay: 0s;
+}
+
+.floating-pattern:nth-child(2) {
+  top: 20%;
+  right: 15%;
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(45deg, #dc2626, #2563eb);
+  animation-delay: 2s;
+}
+
+.floating-pattern:nth-child(3) {
+  bottom: 30%;
+  left: 20%;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(45deg, #2563eb, #7c3aed);
+  animation-delay: 4s;
+}
+
+.floating-pattern:nth-child(4) {
+  bottom: 10%;
+  right: 25%;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(45deg, #8b5cf6, #ef4444);
+  animation-delay: 1s;
+}
+
+.floating-pattern:nth-child(5) {
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(45deg, #3b82f6, #7c3aed);
+  animation-delay: 3s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-20px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(10px) rotate(240deg);
+  }
+}
+
+.animated-bg {
+  background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #1e293b);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
 /* Hero Title Styles */
 .hero-title {
   font-family: 'Orbitron', monospace;
