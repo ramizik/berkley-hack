@@ -6,6 +6,7 @@ import AuthPage from './components/auth/AuthPage';
 import SetupGuide from './components/setup/SetupGuide';
 import SupabaseConnectionStatus from './components/setup/SupabaseConnectionStatus';
 import TopNav from './components/layout/TopNav';
+import Dashboard from './pages/Dashboard';
 import { VocalProfileProvider } from './context/VocalProfileContext';
 
 function App() {
