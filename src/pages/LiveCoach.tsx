@@ -1,6 +1,36 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { 
+  Mic, 
+  MicOff, 
+  Play, 
+  Pause, 
+  Volume2, 
+  VolumeX, 
+  Target, 
+  TrendingUp, 
+  Clock, 
+  Zap,
+  Settings,
+  RotateCcw,
+  CheckCircle,
+  AlertTriangle,
+  Music,
+  Headphones,
+  Activity,
+  BarChart3,
+  ArrowRight,
+  Users,
+  Brain,
+  Radio,
+  PhoneCall,
+  PhoneOff
+} from 'lucide-react';
+import { useVocalProfile } from '../context/VocalProfileContext';
+import { useAuth } from '../context/AuthContext';
+import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
+import { vapiClient, VAPIMetrics, testVAPIConnection, getVoiceAgentDetails } from '../lib/vapiClient';
 
 interface SessionState {
   phase: "welcome" | "recording" | "analyzing" | "feedback" | "complete";
