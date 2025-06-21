@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Lessons from "./pages/Lessons";
 import Practice from "./pages/Practice";
 import LiveCoach from './pages/LiveCoach';
+import VoiceAssistant from './pages/VoiceAssistant';
 import { VocalProfileProvider } from "./context/VocalProfileContext";
 
 function App() {
@@ -81,6 +82,12 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              <Route path="/voice-assistant" element={
+                              <ProtectedRoute>
+                                <VoiceAssistant />
+                              </ProtectedRoute>
+                            } />
             </Routes>
           </div>
         </Router>
