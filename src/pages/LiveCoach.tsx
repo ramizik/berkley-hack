@@ -16,3 +16,22 @@ interface SessionState {
   analysisResult?: any;
   vapiSessionId?: string;
 }
+
+// Vapi SDK types
+declare global {
+  interface Window {
+    vapiSDK?: {
+      run: (config: {
+        apiKey: string;
+        assistant: string;
+        config?: any;
+      }) => {
+        stop: () => void;
+        start: () => void;
+        addEventListener: (event: string, callback: (data: any) => void) => void;
+        removeEventListener: (event: string, callback: (data: any) => void) => void;
+        [key: string]: any;
+      };
+    };
+  }
+}
