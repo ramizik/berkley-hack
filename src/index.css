@@ -30,3 +30,24 @@ html, body {
   animation: heroGradient 4s ease-in-out infinite;
   text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
 }
+
+@keyframes heroGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Additional font classes */
+.font-orbitron {
+  font-family: 'Orbitron', monospace;
+}
+
+.font-space-grotesk {
+  font-family: 'Space Grotesk', sans-serif;
+}
