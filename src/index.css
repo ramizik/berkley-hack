@@ -11,3 +11,22 @@ html, body {
   min-height: 100vh;
 }
 
+/* Hero Title Styles */
+.hero-title {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  background: linear-gradient(
+    45deg,
+    #3b82f6 0%,
+    #ffffff 25%,
+    #dc2626 50%,
+    #ffffff 75%,
+    #3b82f6 100%
+  );
+  background-size: 400% 400%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: heroGradient 4s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+}
