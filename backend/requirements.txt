@@ -1,0 +1,42 @@
+# FastAPI and ASGI server (Pydantic v2 compatible)
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+
+# File handling and multipart support
+python-multipart==0.0.6
+
+# CORS support (FastAPI has built-in CORS, so we don't need fastapi-cors)
+# fastapi-cors==0.0.6  # Removed - conflicts with FastAPI
+
+# Logging and utilities
+python-json-logger==2.0.7
+
+# Audio processing and VibratoScope dependencies
+numpy==1.24.3
+scipy==1.11.4
+librosa==0.10.1
+matplotlib==3.7.2
+pandas==2.0.3
+soundfile==0.12.1
+pydub==0.25.1
+
+# Supabase client for database access (Pydantic v2 compatible)
+supabase>=2.3.0
+
+# Production deployment
+gunicorn==21.2.0 
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Pydantic v2 (required for letta-client)
+pydantic>=2.0.0,<3.0.0
+
+# HTTP requests for Fetch AI API
+requests==2.31.0
+
+# Letta AI integration (latest available version)
+letta-client>=0.1.167
+
+# Timezone support
+pytz 
