@@ -377,3 +377,23 @@ async def get_recent_reports(
     except Exception as e:
         logger.error(f"Error fetching recent reports: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch recent reports: {str(e)}")
+
+
+@app.get("/api/agent/status")
+async def get_agent_status():
+    """
+    Get Fetch AI agent status
+    
+    Returns:
+        JSON with agent status information
+    """
+    try:
+        status = vocal_agent.get_status()
+        return JSONResponse(content={
+            "success": True,
+            "message": "Fetch AI agent status",
+            "data": status
+        })
+    except Exception as e:
+        logger.error(f"Error getting agent status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get agent status: {str(e)}")
