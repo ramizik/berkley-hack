@@ -8,11 +8,12 @@ import SupabaseConnectionStatus from './components/setup/SupabaseConnectionStatu
 import TopNav from './components/layout/TopNav';
 import Dashboard from './pages/Dashboard';
 import Lessons from './pages/Lessons';
+import Practice from './pages/Practice';
 import { VocalProfileProvider } from './context/VocalProfileContext';
 
 function App() {
     return (
-        <AuthProvider><
+        <AuthProvider>
             <VocalProfileProvider>
                 <Router>
                     <div className="min-h-screen animated-bg">
@@ -41,6 +42,17 @@ function App() {
                     <TopNav />
                     <main className="p-6">
                       <Lessons />
+                    </main>
+                  </div>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/practice" element={
+                <ProtectedRoute>
+                  <div className="min-h-screen">
+                    <TopNav />
+                    <main className="p-6">
+                      <Practice />
                     </main>
                   </div>
                 </ProtectedRoute>
