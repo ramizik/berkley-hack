@@ -189,3 +189,191 @@ async def health_check():
         ],
         "timestamp": datetime.now().isoformat()
     })
+
+@app.get("/api/vocal-reports/{user_id}/{date}")
+async def get_vocal_report(
+    user_id: str = Path(..., description="User ID"),
+    date: str = Path(..., description="Date in YYYY-MM-DD format")
+):
+    """
+    Get Fetch AI vocal analysis report for a specific user and date
+    
+    Args:
+        user_id: User ID
+        date: Date in YYYY-MM-DD format
+        
+    Returns:
+        JSON with Fetch AI report data
+    """
+    try:
+        logger.info(f"Fetching vocal report for user {user_id} on {date}")
+        
+        # Validate date format
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+        
+        # First try to get from fetch_ai_reports table
+        if supabase:
+            try:
+                response = supabase.table('fetch_ai_reports').select('*').eq(
+                    'user_id', user_id
+                ).eq('date', date).execute()
+                
+                if response.data:
+                    # Return cached report
+                    report_data = response.data[0]['report_data']
+                    logger.info(f"Retrieved cached report for user {user_id}")
+                    return JSONResponse(content={
+                        "success": True,
+                        "message": "Vocal report retrieved from cache",
+                        "data": report_data,
+                        "source": "cache",
+                        "agent_id": response.data[0].get('agent_id'),
+                        "processing_status": response.data[0].get('processing_status')
+                    })
+            except Exception as e:
+                logger.warning(f"Error accessing fetch_ai_reports table: {str(e)}")
+        
+        # If not in cache, generate new report
+        logger.info(f"Generating on-demand report for user {user_id}")
+        if not fetch_ai_coach:
+            raise HTTPException(status_code=503, detail="AI Coach service is not available.")
+        report = await fetch_ai_coach.generate_daily_report(user_id, date)
+        
+        # Convert dataclass to dict for JSON response
+        report_dict = {
+            "date": report.date,
+            "id": report.id,
+            "summary": report.summary,
+            "metrics": {
+                key: {
+                    "current": metric.current,
+                    "previous": metric.previous,
+                    "change": metric.change,
+                    "trend": metric.trend,
+                    "improvement_percentage": metric.improvement_percentage
+                }
+                for key, metric in report.metrics.items()
+            },
+            "insights": report.insights,
+            "recommendations": report.recommendations,
+            "practice_sessions": report.practice_sessions,
+            "total_practice_time": report.total_practice_time,
+            "best_time_of_day": report.best_time_of_day
+        }
+        
+        # Save the newly generated report to the cache
+        if supabase:
+            try:
+                supabase.table('fetch_ai_reports').insert({
+                    "user_id": user_id,
+                    "date": date,
+                    "report_data": report_dict,
+                    "agent_id": vocal_agent.get_status().get("agent_address"),
+                    "processing_status": "completed_on_demand"
+                }).execute()
+                logger.info(f"Saved on-demand report to cache for user {user_id} on {date}")
+            except Exception as e:
+                logger.error(f"Failed to save on-demand report to cache: {str(e)}")
+
+        return JSONResponse(content={
+            "success": True,
+            "message": "Vocal report generated on-demand",
+            "data": report_dict,
+            "source": "generated"
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating vocal report: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+
+@app.get("/api/vocal-reports/{user_id}/recent")
+async def get_recent_reports(
+    user_id: str = Path(..., description="User ID"),
+    days: int = 7
+):
+    """
+    Get recent vocal reports for a user
+    
+    Args:
+        user_id: User ID
+        days: Number of recent days to fetch (default: 7)
+        
+    Returns:
+        JSON with recent reports
+    """
+    try:
+        logger.info(f"Fetching recent reports for user {user_id} (last {days} days)")
+        
+        reports = []
+        current_date = datetime.now()
+        
+        # Fetch reports for each day
+        for i in range(days):
+            date = (current_date - timedelta(days=i)).strftime("%Y-%m-%d")
+            try:
+                # Try to get from cache first
+                if supabase:
+                    response = supabase.table('fetch_ai_reports').select('*').eq(
+                        'user_id', user_id
+                    ).eq('date', date).execute()
+                    
+                    if response.data:
+                        report_data = response.data[0]['report_data']
+                        reports.append({
+                            "date": date,
+                            "data": report_data,
+                            "source": "cache"
+                        })
+                        continue
+                
+                # Generate if not in cache
+                report = await fetch_ai_coach.generate_daily_report(user_id, date)
+                
+                # Convert to dict
+                report_dict = {
+                    "date": report.date,
+                    "id": report.id,
+                    "summary": report.summary,
+                    "metrics": {
+                        key: {
+                            "current": metric.current,
+                            "previous": metric.previous,
+                            "change": metric.change,
+                            "trend": metric.trend
+                        }
+                        for key, metric in report.metrics.items()
+                    },
+                    "insights": report.insights,
+                    "recommendations": report.recommendations
+                }
+                
+                reports.append({
+                    "date": date,
+                    "data": report_dict,
+                    "source": "generated"
+                })
+                
+            except Exception as e:
+                logger.warning(f"Failed to get report for {date}: {str(e)}")
+                # Add empty report for missing dates
+                reports.append({
+                    "date": date,
+                    "data": None,
+                    "source": "error",
+                    "error": str(e)
+                })
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": f"Retrieved {len(reports)} recent reports",
+            "data": reports
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching recent reports: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch recent reports: {str(e)}")
