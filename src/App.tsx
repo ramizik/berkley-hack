@@ -7,6 +7,7 @@ import SetupGuide from './components/setup/SetupGuide';
 import SupabaseConnectionStatus from './components/setup/SupabaseConnectionStatus';
 import TopNav from './components/layout/TopNav';
 import Dashboard from './pages/Dashboard';
+import Lessons from './pages/Lessons';
 import { VocalProfileProvider } from './context/VocalProfileContext';
 
 function App() {
@@ -33,10 +34,23 @@ function App() {
                   </div>
                 </ProtectedRoute>
               } />
+
+              <Route path="/lessons" element={
+                <ProtectedRoute>
+                  <div className="min-h-screen">
+                    <TopNav />
+                    <main className="p-6">
+                      <Lessons />
+                    </main>
+                  </div>
+                </ProtectedRoute>
+              } />
                         </Routes>
                     </div>
                 </Router>
             </VocalProfileProvider>
         </AuthProvider>
-    )
+    );
 }
+
+export default App
