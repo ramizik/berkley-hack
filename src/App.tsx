@@ -3,8 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AuthPage from './components/auth/AuthPage';
-import SetupGuide from './components/setup/SetupGuide';
-import SupabaseConnectionStatus from './components/setup/SupabaseConnectionStatus';
 import TopNav from './components/layout/TopNav';
 import Dashboard from './pages/Dashboard';
 import Lessons from './pages/Lessons';
@@ -23,9 +21,6 @@ function App() {
       <VocalProfileProvider>
         <Router>
           <div className="min-h-screen animated-bg">
-            <SetupGuide />
-            <SupabaseConnectionStatus />
-            
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Introduction />} />
