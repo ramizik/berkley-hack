@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
-    "@vapi-ai/web": "^1.4.0",
+    "@vapi-ai/web": "^1.5.0",
     "framer-motion": "^11.0.5",
     "lucide-react": "^0.344.0",
     "pitchy": "^4.1.0",
@@ -29,7 +29,7 @@
     "vite": "^4.4.5"
   },
   "overrides": {
-    "daily-js": "^0.67.0"
+    "daily-js": "^0.68.0"
   },
   "type": "module"
 }
