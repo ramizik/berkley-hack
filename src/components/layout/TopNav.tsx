@@ -13,7 +13,6 @@ const TopNav: React.FC = () => {
     { name: 'Practice', path: '/practice' },
     { name: 'Live Coach', path: '/live-coach' },
     { name: 'Progress', path: '/progress' },
-    { name: 'Settings', path: '/settings' },
   ];
 
   const toggleMobileMenu = () => {

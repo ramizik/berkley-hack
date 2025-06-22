@@ -8,7 +8,6 @@ import Dashboard from './pages/Dashboard';
 import Lessons from './pages/Lessons';
 import Practice from './pages/Practice';
 import Progress from './pages/Progress';
-import Settings from './pages/Settings';
 import Onboarding from './pages/Onboarding';
 import Introduction from './pages/Introduction';
 import LiveCoach from './pages/LiveCoach';
@@ -83,17 +82,6 @@ function App() {
                     <TopNav />
                     <main className="p-6">
                       <Progress />
-                    </main>
-                  </div>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <div className="min-h-screen">
-                    <TopNav />
-                    <main className="p-6">
-                      <Settings />
                     </main>
                   </div>
                 </ProtectedRoute>
