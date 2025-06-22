@@ -45,4 +45,4 @@ letta-client>=0.1.167
 pytz
 
 # Groq SDK for lyrics generation (updated to latest stable version)
-groq==0.4.3 
+groq>=0.25.0,<0.29.0 

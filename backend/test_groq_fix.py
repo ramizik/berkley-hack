@@ -12,12 +12,26 @@ def test_groq_import():
         from groq import Groq
         print("✓ Groq SDK imported successfully")
         
+        # Try to get version info
+        try:
+            import groq
+            print(f"✓ Groq SDK version: {groq.__version__}")
+        except AttributeError:
+            print("✓ Groq SDK version: unknown (but import successful)")
+        
         # Test initialization (without API key for now)
         api_key = os.getenv("GROQ_API_KEY")
         if api_key:
             try:
                 client = Groq(api_key=api_key)
                 print("✓ Groq client initialized successfully")
+                
+                # Test basic API structure (without making actual calls)
+                if hasattr(client, 'chat') and hasattr(client.chat, 'completions'):
+                    print("✓ Groq client API structure looks correct")
+                else:
+                    print("⚠ Groq client API structure may have changed")
+                
                 return True
             except Exception as e:
                 print(f"✗ Groq client initialization failed: {e}")
