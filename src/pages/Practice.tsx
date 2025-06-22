@@ -76,6 +76,29 @@ const Practice: React.FC = () => {
     }
   }, [user, profile?.username, sessionSaved]);
 
+  // Use the voice analysis hook with memoized callback
+  const {
+    isRecording,
+    recordingComplete,
+    isAnalyzing,
+    analysisComplete,
+    error,
+    currentPitch,
+    currentNote,
+    displayedNote,
+    recordingDuration,
+    startRecording,
+    stopRecording,
+    analyzeVoice,
+    resetRecording,
+    analysisResult,
+    audioBlob,
+    pitchSamples,
+    sungNotes,
+  } = useVoiceAnalysis({
+    onAnalysisComplete: savePracticeSession,
+  });
+
   // Generate AI feedback after voice analysis is complete
   const generateAIFeedback = useCallback(async (analysisResult: any) => {
     if (!analysisResult || !audioBlob) return;
@@ -246,29 +269,6 @@ const Practice: React.FC = () => {
       generated_at: new Date().toISOString()
     };
   };
-
-  // Use the voice analysis hook with memoized callback
-  const {
-    isRecording,
-    recordingComplete,
-    isAnalyzing,
-    analysisComplete,
-    error,
-    currentPitch,
-    currentNote,
-    displayedNote,
-    recordingDuration,
-    startRecording,
-    stopRecording,
-    analyzeVoice,
-    resetRecording,
-    analysisResult,
-    audioBlob,
-    pitchSamples,
-    sungNotes,
-  } = useVoiceAnalysis({
-    onAnalysisComplete: savePracticeSession,
-  });
 
   // Auto-analyze when recording is complete (only once)
   useEffect(() => {
