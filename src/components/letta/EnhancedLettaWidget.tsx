@@ -31,7 +31,6 @@ const EnhancedLettaWidget: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLettaOpen, setIsLettaOpen] = useState(false);
-  const [selectedContext, setSelectedContext] = useState('coaching');
 
   useEffect(() => {
     if (user?.id) {
@@ -133,34 +132,11 @@ const EnhancedLettaWidget: React.FC = () => {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => {
-                setSelectedContext('personality');
-                setIsLettaOpen(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
-            >
-              <MessageCircle size={16} />
-              Personality
-            </button>
-            <button
-              onClick={() => {
-                setSelectedContext('health');
-                setIsLettaOpen(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
-            >
-              <MessageCircle size={16} />
-              Health
-            </button>
-            <button
-              onClick={() => {
-                setSelectedContext('coaching');
-                setIsLettaOpen(true);
-              }}
+              onClick={() => setIsLettaOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors"
             >
               <MessageCircle size={16} />
-              Progress
+              Chat with AI Coach
             </button>
           </div>
         </div>
@@ -297,7 +273,7 @@ const EnhancedLettaWidget: React.FC = () => {
         isOpen={isLettaOpen}
         onClose={() => setIsLettaOpen(false)}
         fetchAiReport={null}
-        conversationType={selectedContext}
+        conversationType="coaching"
       />
     </>
   );
