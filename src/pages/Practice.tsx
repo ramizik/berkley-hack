@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Volume2, Pause, Play, Save, RotateCcw, CheckCircle, AlertCircle, Music } from 'lucide-react';
+import { Mic, Volume2, Pause, Play, Save, RotateCcw, CheckCircle, AlertCircle, Music, Brain, MessageCircle } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
 import { supabase } from '../lib/supabase';
 import LyricsRequest from '../components/practice/LyricsRequest';
+import LettaChat from '../components/letta/LettaChat';
 
 const Practice: React.FC = () => {
   const { profile } = useVocalProfile();
@@ -14,6 +15,7 @@ const Practice: React.FC = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [sessionSaved, setSessionSaved] = useState(false);
   const [currentLyrics, setCurrentLyrics] = useState<string>('');
+  const [isLettaOpen, setIsLettaOpen] = useState(false);
 
   // Save practice session to vocal_analysis_history table
   const savePracticeSession = useCallback(async (results: any) => {
@@ -449,6 +451,48 @@ const Practice: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Real-time AI Coaching Panel */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="card mb-8"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white flex items-center">
+              <Brain size={24} className="mr-2 text-pink-400" />
+              AI Practice Coach
+            </h3>
+            <button
+              onClick={() => setIsLettaOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors"
+            >
+              <MessageCircle size={18} />
+              Get Real-time Coaching
+            </button>
+          </div>
+          
+          <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg p-4">
+            <p className="text-gray-300 mb-3">
+              Your AI coach analyzes your practice in real-time and adapts to your vocal personality.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-gray-300">Live technique feedback</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span className="text-gray-300">Personalized exercises</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span className="text-gray-300">Progress tracking</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
         
         {/* Practice History */}
         <motion.div 
@@ -467,6 +511,13 @@ const Practice: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        <LettaChat
+          isOpen={isLettaOpen}
+          onClose={() => setIsLettaOpen(false)}
+          fetchAiReport={analysisResult}
+          conversationType="exercise_guidance"
+        />
       </motion.div>
     </>
   );

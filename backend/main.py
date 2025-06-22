@@ -33,6 +33,16 @@ except ImportError as e:
     LETTA_AVAILABLE = False
     letta_coach = None
 
+# Import Enhanced Letta service
+try:
+    from enhanced_letta_service import EnhancedLettaService
+    from enhanced_api_endpoints import router as enhanced_letta_router
+    ENHANCED_LETTA_AVAILABLE = True
+    logging.info("Enhanced Letta service imported successfully")
+except ImportError as e:
+    logging.warning(f"Enhanced Letta service not available: {str(e)}")
+    ENHANCED_LETTA_AVAILABLE = False
+
 # Import Groq client for lyrics generation
 try:
     from groq import Groq
@@ -48,6 +58,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Vocal Coach AI Backend", version="1.0.0")
+
+# Include enhanced Letta routes if available
+if ENHANCED_LETTA_AVAILABLE:
+    app.include_router(enhanced_letta_router)
+    logger.info("Enhanced Letta API endpoints registered")
+else:
+    logger.warning("Enhanced Letta API endpoints not available")
 
 # Initialize Supabase client
 supabase_url = os.getenv("SUPABASE_URL")

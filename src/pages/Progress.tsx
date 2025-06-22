@@ -546,16 +546,73 @@ const Progress: React.FC = () => {
               {getCurrentReport()?.summary}
             </p>
             
-            {/* CTA for Letta Chatbot */}
-            <motion.button
-              onClick={() => setIsLettaOpen(true)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
-            >
-              <Brain size={20} />
-              <span>Ask Your Personal Coach</span>
-            </motion.button>
+            {/* Enhanced Letta Integration */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <motion.button
+                onClick={() => setIsLettaOpen(true)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+              >
+                <Brain size={18} />
+                <span>Deep Analysis</span>
+              </motion.button>
+              
+              <motion.button
+                onClick={() => {
+                  // Trigger health monitoring analysis
+                  const currentReport = getCurrentReport();
+                  if (currentReport && user) {
+                    // Call health monitoring API
+                    fetch(`${import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080'}/api/letta/health/monitor`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        user_id: user.id,
+                        vocal_metrics: currentReport.vocal_metrics,
+                        environmental_data: {}
+                      })
+                    }).then(res => res.json()).then(data => {
+                      console.log('Health monitoring result:', data);
+                      setIsLettaOpen(true);
+                    });
+                  }
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+              >
+                <CheckCircle size={18} />
+                <span>Health Check</span>
+              </motion.button>
+              
+              <motion.button
+                onClick={() => {
+                  // Trigger personality evolution analysis
+                  const currentReport = getCurrentReport();
+                  if (currentReport && user) {
+                    // Call personality analysis API
+                    fetch(`${import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080'}/api/letta/personality/analyze`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        user_id: user.id,
+                        vocal_metrics: currentReport.vocal_metrics
+                      })
+                    }).then(res => res.json()).then(data => {
+                      console.log('Personality evolution result:', data);
+                      setIsLettaOpen(true);
+                    });
+                  }
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+              >
+                <Sparkles size={18} />
+                <span>Evolution</span>
+              </motion.button>
+            </div>
           </div>
 
           {/* Vocal Metrics */}

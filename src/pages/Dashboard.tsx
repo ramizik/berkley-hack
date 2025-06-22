@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { Calendar, Clock, TrendingUp, Award, Music, Mic, ArrowRight } from 'lucide-react';
+import EnhancedLettaWidget from '../components/letta/EnhancedLettaWidget';
 
 const Dashboard: React.FC = () => {
   const { profile, loading } = useVocalProfile();
@@ -297,7 +298,10 @@ const Dashboard: React.FC = () => {
           </div>
         </motion.div>
       </div>
-    </motion.div>
+
+              {/* Enhanced Letta Widget */}
+        <EnhancedLettaWidget />
+          </motion.div>
   );
 };
 

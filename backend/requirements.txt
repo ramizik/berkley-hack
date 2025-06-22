@@ -46,3 +46,7 @@ pytz
 
 # Groq SDK for lyrics generation (updated to latest stable version)
 groq>=0.25.0,<0.29.0 
+
+# Enhanced Letta functionality
+python-dateutil>=2.8.0
+scikit-learn>=1.3.0

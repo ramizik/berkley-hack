@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Clock, BarChart, BookOpen, Mic, MicOff, Brain, Sparkles, AlertTriangle, X, CheckCircle, Target, Phone, PhoneOff, Play, Pause, Volume2, VolumeX, TrendingUp, Zap, Settings, RotateCcw, Music, Headphones, Activity, BarChart3, ArrowRight, Users, Radio, Square, AudioWaveform as Waveform } from 'lucide-react';
+import { Filter, Clock, BarChart, BookOpen, Mic, MicOff, Brain, Sparkles, AlertTriangle, X, CheckCircle, Target, Phone, PhoneOff, Play, Pause, Volume2, VolumeX, TrendingUp, Zap, Settings, RotateCcw, Music, Headphones, Activity, BarChart3, ArrowRight, Users, Radio, Square, AudioWaveform as Waveform, MessageCircle } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
+import LettaChat from '../components/letta/LettaChat';
 
 interface SessionState {
   phase: 'welcome' | 'recording' | 'analyzing' | 'feedback' | 'complete';
@@ -41,6 +42,7 @@ const Lessons: React.FC = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationType, setNotificationType] = useState<'success' | 'error' | 'info'>('info');
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [isLettaOpen, setIsLettaOpen] = useState(false);
   
   // Refs
   const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -695,7 +697,7 @@ const Lessons: React.FC = () => {
             ))}
           </div>
           
-          <div className="flex-shrink-0">
+          <div className="flex gap-2 flex-shrink-0">
             <div className="relative">
               <select
                 value={selectedLevel}
@@ -710,6 +712,14 @@ const Lessons: React.FC = () => {
               </select>
               <Filter className="absolute left-3 top-2.5 text-gray-500" size={16} />
             </div>
+            
+            <button
+              onClick={() => setIsLettaOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors text-sm font-medium"
+            >
+              <Brain size={16} />
+              AI Lesson Advisor
+            </button>
           </div>
         </div>
         
@@ -866,6 +876,13 @@ const Lessons: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        <LettaChat
+          isOpen={isLettaOpen}
+          onClose={() => setIsLettaOpen(false)}
+          fetchAiReport={analysisResult}
+          conversationType="exercise_guidance"
+        />
       </div>
     </motion.div>
   );
