@@ -219,10 +219,10 @@ class EnhancedLettaService:
                     learning_preferences=profile_data['learning_preferences'],
                     coaching_adaptations=profile_data['coaching_adaptations'],
                     vocal_fingerprint=profile_data['vocal_fingerprint'],
-                    last_evolution_date=datetime.fromisoformat(profile_data['last_evolution_date']),
+                    last_evolution_date=self._parse_datetime_with_tz(profile_data['last_evolution_date']),
                     total_evolution_points=profile_data['total_evolution_points'],
-                    created_at=datetime.fromisoformat(profile_data['created_at']),
-                    updated_at=datetime.fromisoformat(profile_data['updated_at'])
+                    created_at=self._parse_datetime_with_tz(profile_data['created_at']),
+                    updated_at=self._parse_datetime_with_tz(profile_data['updated_at'])
                 )
             else:
                 # Create new personality profile
@@ -275,9 +275,9 @@ class EnhancedLettaService:
                     warning_indicators=health_data['warning_indicators'],
                     optimal_practice_windows=health_data['optimal_practice_windows'],
                     health_trends=health_data['health_trends'],
-                    last_health_check=datetime.fromisoformat(health_data['last_health_check']),
-                    created_at=datetime.fromisoformat(health_data['created_at']),
-                    updated_at=datetime.fromisoformat(health_data['updated_at'])
+                    last_health_check=self._parse_datetime_with_tz(health_data['last_health_check']),
+                    created_at=self._parse_datetime_with_tz(health_data['created_at']),
+                    updated_at=self._parse_datetime_with_tz(health_data['updated_at'])
                 )
             else:
                 # Create new health profile
@@ -601,4 +601,12 @@ class EnhancedLettaService:
             last_health_check=datetime.now(pytz.utc),
             created_at=datetime.now(pytz.utc),
             updated_at=datetime.now(pytz.utc)
-        ) 
+        )
+    
+    def _parse_datetime_with_tz(self, datetime_str: str) -> datetime:
+        """Parse datetime string and ensure it's timezone-aware"""
+        dt = datetime.fromisoformat(datetime_str.replace('Z', '+00:00'))
+        if dt.tzinfo is None:
+            # If no timezone info, assume UTC
+            dt = pytz.utc.localize(dt)
+        return dt 

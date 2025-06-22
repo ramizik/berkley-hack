@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 import logging
 from datetime import datetime
+import pytz
 from enhanced_letta_service import EnhancedLettaService, VocalPersonalityType, HealthRiskLevel
 
 logger = logging.getLogger(__name__)
@@ -201,11 +202,24 @@ async def get_dashboard_insights(user_id: str):
         personality_profile = await enhanced_letta.get_personality_profile(user_id)
         health_profile = await enhanced_letta.get_health_profile(user_id)
         
+        # Use timezone-aware datetime for calculations
+        now_utc = datetime.now(pytz.utc)
+        
+        # Handle timezone conversion for created_at
+        if personality_profile.created_at.tzinfo is None:
+            # If created_at is naive, assume it's UTC
+            created_at_utc = pytz.utc.localize(personality_profile.created_at)
+        else:
+            # If it's already timezone-aware, convert to UTC
+            created_at_utc = personality_profile.created_at.astimezone(pytz.utc)
+        
+        days_training = max(1, (now_utc - created_at_utc).days)
+        
         dashboard_data = {
             "personality_summary": {
                 "type": personality_profile.personality_type.value,
                 "evolution_score": personality_profile.evolution_score,
-                "days_training": (datetime.now() - personality_profile.created_at).days,
+                "days_training": days_training,
                 "insights_learned": personality_profile.total_evolution_points,
                 "adaptation_score": personality_profile.evolution_score
             },
@@ -213,7 +227,7 @@ async def get_dashboard_insights(user_id: str):
                 "risk_level": health_profile.current_risk_level.value,
                 "strain_indicators": len(health_profile.warning_indicators),
                 "optimal_windows": len(health_profile.optimal_practice_windows),
-                "last_check": health_profile.last_health_check.isoformat()
+                "last_check": health_profile.last_health_check.isoformat() if health_profile.last_health_check else now_utc.isoformat()
             },
             "recommendations": _generate_dashboard_recommendations(
                 personality_profile, health_profile
