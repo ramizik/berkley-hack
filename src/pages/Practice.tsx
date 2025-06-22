@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Volume2, Pause, Play, Save, RotateCcw, CheckCircle, AlertCircle, Music, Brain, MessageCircle } from 'lucide-react';
+import { Mic, Volume2, Pause, Play, Save, RotateCcw, CheckCircle, AlertCircle, Music, Brain, MessageCircle, MessageSquare, Loader2 } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';

@@ -102,7 +102,7 @@ if groq_api_key and GROQ_AVAILABLE:
     groq_client = Groq(api_key=groq_api_key)
     logger.info("Groq client initialized successfully")
 else:
-    logger.warning("Groq API key not found or SDK not available. Lyrics generation will use fallback.")
+    logger.warning("Groq API key not found or SDK not available. Lyrics generation and vocal feedback will use fallback.")
 
 # Background task to start Fetch AI agent
 @app.on_event("startup")
@@ -226,6 +226,7 @@ async def health_check():
         "service": "vocal-coach-ai-backend",
         "endpoints": [
             "/analyze-voice",
+            "/api/vocal-feedback",
             "/api/vocal-reports/{user_id}/{date}",
             "/api/agent/status"
         ],
@@ -769,6 +770,327 @@ def _generate_fallback_lyrics(genre: str, mood: str, theme: str, difficulty: str
     difficulty_template = mood_templates.get(difficulty, mood_templates.get("beginner", mood_templates.get("intermediate", mood_templates.get("advanced"))))
     
     return difficulty_template
+
+@app.post("/api/vocal-feedback")
+async def generate_vocal_feedback(
+    audio: UploadFile = File(...),
+    target_song: Optional[str] = Form(None),
+    user_vocal_profile: Optional[str] = Form(None),
+    practice_session: Optional[int] = Form(1),
+    user_id: Optional[str] = Form(None),
+    session_id: Optional[str] = Form(None)
+):
+    """
+    Generate real-time vocal feedback using Groq AI
+    
+    Args:
+        audio: User's vocal recording
+        target_song: Song being practiced (optional)
+        user_vocal_profile: JSON string of user's vocal profile
+        practice_session: Session number for tracking progress
+        user_id: User ID for tracking
+        session_id: Session ID for tracking
+        
+    Returns:
+        JSON with comprehensive vocal feedback
+    """
+    try:
+        logger.info(f"Received vocal feedback request: {audio.filename}")
+        
+        # Validate file type
+        if not audio.filename.lower().endswith(('.wav', '.mp3', '.m4a', '.webm')):
+            raise HTTPException(status_code=400, detail="Unsupported audio format")
+        
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{audio.filename.split('.')[-1]}") as temp_file:
+            content = await audio.read()
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # First, analyze the audio using existing voice analyzer
+            logger.info(f"Starting voice analysis for feedback")
+            analysis_results = await voice_analyzer.analyze_audio_file(temp_file_path)
+            
+            # Generate AI-powered feedback using Groq
+            feedback_results = await _generate_groq_vocal_feedback(
+                analysis_results, target_song, user_vocal_profile, practice_session
+            )
+            
+            # Combine analysis and feedback
+            combined_results = {
+                **analysis_results,
+                **feedback_results
+            }
+            
+            # Save to database if user_id is provided
+            if user_id and supabase:
+                try:
+                    feedback_data = {
+                        'id': session_id or f"feedback_{int(datetime.now().timestamp())}",
+                        'user_id': user_id,
+                        'created_at': datetime.now().isoformat(),
+                        'practice_session': practice_session,
+                        'target_song': target_song,
+                        'voice_analysis': analysis_results,
+                        'ai_feedback': feedback_results,
+                        'feedback_type': 'real_time_coaching'
+                    }
+                    
+                    # Insert into vocal_feedback_history table
+                    result = supabase.table('vocal_feedback_history').insert(feedback_data).execute()
+                    logger.info(f"Vocal feedback saved to database: {feedback_data['id']}")
+                    
+                except Exception as db_error:
+                    logger.error(f"Failed to save feedback to database: {str(db_error)}")
+            
+            return JSONResponse(content={
+                "success": True,
+                "message": "Vocal feedback generated successfully",
+                "data": combined_results,
+                "file_name": audio.filename,
+                "file_size": len(content),
+                "user_id": user_id,
+                "session_id": session_id
+            })
+            
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                logger.info(f"Cleaned up temporary file: {temp_file_path}")
+    
+    except Exception as e:
+        logger.error(f"Error in vocal feedback generation: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Feedback generation failed: {str(e)}")
+
+async def _generate_groq_vocal_feedback(
+    voice_analysis: Dict[str, Any], 
+    target_song: Optional[str], 
+    user_vocal_profile: Optional[str], 
+    practice_session: int
+) -> Dict[str, Any]:
+    """
+    Generate AI-powered vocal feedback using Groq
+    """
+    if not groq_client:
+        logger.warning("Groq client not available, using fallback feedback")
+        return _generate_fallback_vocal_feedback(voice_analysis, target_song, practice_session)
+    
+    try:
+        # Parse user vocal profile
+        vocal_profile = {}
+        if user_vocal_profile:
+            try:
+                vocal_profile = json.loads(user_vocal_profile)
+            except json.JSONDecodeError:
+                logger.warning("Invalid vocal profile JSON, using empty profile")
+        
+        # Create comprehensive prompt for Groq
+        prompt = f"""
+        As an expert vocal coach with 20+ years of experience, analyze this singing performance and provide comprehensive, actionable feedback.
+
+        VOCAL ANALYSIS DATA:
+        - Mean Pitch: {voice_analysis.get('mean_pitch', 0)} Hz
+        - Voice Type: {voice_analysis.get('voice_type', 'unknown')}
+        - Vibrato Rate: {voice_analysis.get('vibrato_rate', 0)} Hz
+        - Jitter: {voice_analysis.get('jitter', 0)}
+        - Shimmer: {voice_analysis.get('shimmer', 0)}
+        - Dynamics: {voice_analysis.get('dynamics', 'stable')}
+        - Vocal Range: {voice_analysis.get('lowest_note', 'C3')} - {voice_analysis.get('highest_note', 'C5')}
+
+        TARGET SONG: {target_song or 'General vocal practice'}
+        PRACTICE SESSION: #{practice_session}
+        USER PROFILE: {json.dumps(vocal_profile, indent=2)}
+
+        Please provide detailed feedback in the following JSON format:
+
+        {{
+            "overall_assessment": {{
+                "score": 1-10,
+                "strengths": ["list of strengths"],
+                "areas_for_improvement": ["list of areas to work on"],
+                "confidence_level": "low/medium/high"
+            }},
+            "technical_feedback": {{
+                "pitch_accuracy": {{
+                    "assessment": "detailed assessment",
+                    "specific_issues": ["list of issues"],
+                    "exercises": ["specific exercises to improve"]
+                }},
+                "breath_control": {{
+                    "assessment": "detailed assessment",
+                    "specific_issues": ["list of issues"],
+                    "exercises": ["specific exercises to improve"]
+                }},
+                "vocal_technique": {{
+                    "assessment": "detailed assessment",
+                    "specific_issues": ["list of issues"],
+                    "exercises": ["specific exercises to improve"]
+                }}
+            }},
+            "emotional_expression": {{
+                "assessment": "how well emotion was conveyed",
+                "suggestions": ["ways to improve emotional expression"],
+                "performance_tips": ["tips for better performance"]
+            }},
+            "practice_recommendations": {{
+                "immediate_focus": "what to work on in next 10 minutes",
+                "daily_exercises": ["exercises for daily practice"],
+                "weekly_goals": ["goals for the week"],
+                "long_term_development": "long-term improvement plan"
+            }},
+            "motivational_message": "encouraging message for the singer",
+            "next_session_prep": "what to prepare for the next practice session"
+        }}
+
+        Be specific, encouraging, and actionable. Focus on the most important areas for improvement while acknowledging strengths.
+        """
+
+        # Call Groq API
+        response = groq_client.chat.completions.create(
+            model="llama3-8b-8192",  # Using Llama3 for better reasoning
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.7,  # Balanced creativity and consistency
+            max_tokens=1500,
+            top_p=0.9
+        )
+        
+        feedback_content = response.choices[0].message.content.strip()
+        
+        # Parse the JSON response
+        try:
+            feedback_data = json.loads(feedback_content)
+            return {
+                "ai_feedback": feedback_data,
+                "feedback_source": "groq_ai",
+                "generated_at": datetime.now().isoformat()
+            }
+        except json.JSONDecodeError:
+            logger.warning("Failed to parse Groq response as JSON, using fallback")
+            return _generate_fallback_vocal_feedback(voice_analysis, target_song, practice_session)
+            
+    except Exception as e:
+        logger.error(f"Groq API error: {str(e)}")
+        logger.warning("Falling back to mock feedback generation")
+        return _generate_fallback_vocal_feedback(voice_analysis, target_song, practice_session)
+
+def _generate_fallback_vocal_feedback(
+    voice_analysis: Dict[str, Any], 
+    target_song: Optional[str], 
+    practice_session: int
+) -> Dict[str, Any]:
+    """
+    Generate fallback vocal feedback when Groq is unavailable
+    """
+    import random
+    
+    voice_type = voice_analysis.get('voice_type', 'tenor')
+    mean_pitch = voice_analysis.get('mean_pitch', 280)
+    
+    # Generate contextual feedback based on voice analysis
+    if mean_pitch < 250:
+        voice_category = "lower voice"
+        breath_exercise = "Focus on diaphragmatic breathing to support your lower register"
+    elif mean_pitch > 350:
+        voice_category = "higher voice"
+        breath_exercise = "Work on breath control to maintain clarity in your upper register"
+    else:
+        voice_category = "mid-range voice"
+        breath_exercise = "Practice breath support for consistent tone across your range"
+    
+    return {
+        "ai_feedback": {
+            "overall_assessment": {
+                "score": random.randint(6, 9),
+                "strengths": [
+                    f"Good {voice_category} control",
+                    "Consistent pitch stability",
+                    "Clear vocal tone"
+                ],
+                "areas_for_improvement": [
+                    "Breath control and support",
+                    "Dynamic range expression",
+                    "Vibrato consistency"
+                ],
+                "confidence_level": random.choice(["low", "medium", "high"])
+            },
+            "technical_feedback": {
+                "pitch_accuracy": {
+                    "assessment": "Your pitch accuracy shows good potential with room for improvement",
+                    "specific_issues": [
+                        "Minor pitch variations in sustained notes",
+                        "Slight flatness on higher notes"
+                    ],
+                    "exercises": [
+                        "Practice with a piano or pitch app",
+                        "Sustained note exercises",
+                        "Scale practice in your comfortable range"
+                    ]
+                },
+                "breath_control": {
+                    "assessment": "Breath control needs focused attention",
+                    "specific_issues": [
+                        "Inconsistent breath support",
+                        "Short phrase length"
+                    ],
+                    "exercises": [
+                        breath_exercise,
+                        "Lip trills for breath control",
+                        "Sustained vowel exercises"
+                    ]
+                },
+                "vocal_technique": {
+                    "assessment": "Good foundation with room for technical refinement",
+                    "specific_issues": [
+                        "Tension in upper register",
+                        "Inconsistent vocal placement"
+                    ],
+                    "exercises": [
+                        "Vocal warm-ups before practice",
+                        "Humming exercises for placement",
+                        "Relaxation techniques for tension"
+                    ]
+                }
+            },
+            "emotional_expression": {
+                "assessment": "Focus on connecting emotionally with your material",
+                "suggestions": [
+                    "Practice with feeling and intention",
+                    "Record yourself and listen for emotional impact",
+                    "Study performances of songs you love"
+                ],
+                "performance_tips": [
+                    "Visualize the story you're telling",
+                    "Use facial expressions to enhance emotion",
+                    "Practice in front of a mirror"
+                ]
+            },
+            "practice_recommendations": {
+                "immediate_focus": "Work on breath control exercises for 10 minutes",
+                "daily_exercises": [
+                    "5 minutes of vocal warm-ups",
+                    "10 minutes of breath control practice",
+                    "15 minutes of song practice"
+                ],
+                "weekly_goals": [
+                    "Improve breath support",
+                    "Expand vocal range by one note",
+                    "Learn one new song"
+                ],
+                "long_term_development": "Build a consistent daily practice routine focusing on technique and expression"
+            },
+            "motivational_message": "You're making great progress! Every practice session brings you closer to your vocal goals. Keep up the excellent work!",
+            "next_session_prep": "Prepare a song you love to sing and focus on emotional connection"
+        },
+        "feedback_source": "fallback_ai",
+        "generated_at": datetime.now().isoformat()
+    }
 
 @app.post("/api/lesson-feedback")
 async def store_lesson_feedback(
