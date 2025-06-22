@@ -97,36 +97,6 @@ const Introduction: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800">
-      {/* Fixed White Circle in Top Right Corner */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        className="fixed top-6 right-6 z-50 w-16 h-16 md:w-20 md:h-20"
-      >
-        <motion.img
-          src="/white_circle_360x360.png"
-          alt="VocalAI Logo"
-          className="w-full h-full object-contain"
-          animate={{
-            rotate: [0, 360],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{
-            rotate: {
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear"
-            },
-            scale: {
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }
-          }}
-        />
-      </motion.div>
-
       {/* Subtle Red and Blue gradient accents */}
       <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-gradient-to-br from-red-500/15 to-transparent rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-gradient-to-tl from-blue-500/15 to-transparent rounded-full blur-3xl"></div>
@@ -134,127 +104,6 @@ const Introduction: React.FC = () => {
       
       {/* Animated floating patterns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* White floating circles - restored original positions */}
-        <motion.div
-          animate={{
-            y: [0, -30, 0],
-            rotate: [0, 360],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-[10%] left-[10%] w-24 h-24 bg-white/10 rounded-full"
-        />
-        
-        <motion.div
-          animate={{
-            y: [0, 40, 0],
-            rotate: [360, 0],
-            scale: [1, 0.9, 1]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-          className="absolute top-[20%] right-[15%] w-32 h-32 bg-white/8 rounded-full"
-        />
-        
-        <motion.div
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 180],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 4
-          }}
-          className="absolute bottom-[30%] left-[20%] w-20 h-20 bg-white/12 rounded-full"
-        />
-        
-        <motion.div
-          animate={{
-            y: [0, 25, 0],
-            rotate: [180, 360],
-            scale: [1, 0.8, 1]
-          }}
-          transition={{
-            duration: 9,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-          className="absolute bottom-[10%] right-[25%] w-28 h-28 bg-white/9 rounded-full"
-        />
-        
-        <motion.div
-          animate={{
-            y: [0, -15, 0],
-            rotate: [0, 270],
-            scale: [1, 1.3, 1]
-          }}
-          transition={{
-            duration: 11,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 3
-          }}
-          className="absolute top-[50%] left-[50%] w-16 h-16 bg-white/15 rounded-full"
-        />
-        
-        <motion.div
-          animate={{
-            y: [0, 35, 0],
-            rotate: [90, 450],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{
-            duration: 13,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 5
-          }}
-          className="absolute top-[60%] right-[30%] w-22 h-22 bg-white/11 rounded-full"
-        />
-        
-        {/* Additional floating circles for better coverage */}
-        <motion.div
-          animate={{
-            y: [0, -25, 0],
-            rotate: [45, 405],
-            scale: [1, 0.9, 1]
-          }}
-          transition={{
-            duration: 14,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 6
-          }}
-          className="absolute top-[75%] left-[15%] w-18 h-18 bg-white/13 rounded-full"
-        />
-        
-        <motion.div
-          animate={{
-            y: [0, 30, 0],
-            rotate: [270, 630],
-            scale: [1, 1.4, 1]
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 7
-          }}
-          className="absolute top-[35%] right-[10%] w-26 h-26 bg-white/7 rounded-full"
-        />
-        
         {/* Additional animated elements */}
         <motion.div
           animate={{
@@ -560,7 +409,7 @@ const Introduction: React.FC = () => {
                       }}
                       className="mt-1 mr-4"
                     >
-                      <Star className="text-white" size={20} />
+                      <Star className="text-yellow-300" size={20} />
                     </motion.div>
                     <span className="text-gray-300 text-lg">
                       {text}
