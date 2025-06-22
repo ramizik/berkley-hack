@@ -17,6 +17,14 @@ const Practice: React.FC = () => {
   const [sessionSaved, setSessionSaved] = useState(false);
   const [currentLyrics, setCurrentLyrics] = useState<string>('');
   const [isLettaOpen, setIsLettaOpen] = useState(false);
+  const [vocalProfile, setVocalProfile] = useState<any>(null);
+  
+  // New AI feedback state
+  const [aiFeedback, setAiFeedback] = useState<any>(null);
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
   // Save practice session to vocal_analysis_history table
   const savePracticeSession = useCallback(async (results: any) => {
@@ -68,6 +76,177 @@ const Practice: React.FC = () => {
     }
   }, [user, profile?.username, sessionSaved]);
 
+  // Generate AI feedback after voice analysis is complete
+  const generateAIFeedback = useCallback(async (analysisResult: any) => {
+    if (!analysisResult || !audioBlob) return;
+
+    setIsGeneratingFeedback(true);
+    setFeedbackError(null);
+
+    try {
+      // Check if backend is available
+      const backendUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+      
+      try {
+        const healthCheck = await fetch(`${backendUrl}/health`, { 
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        if (healthCheck.ok) {
+          // Backend is available, use real API
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'recording.wav');
+          
+          if (currentLyrics) {
+            formData.append('target_song', currentLyrics);
+          }
+          
+          if (vocalProfile) {
+            formData.append('user_vocal_profile', JSON.stringify(vocalProfile));
+          }
+          
+          formData.append('practice_session', '1');
+          
+          const response = await fetch(`${backendUrl}/api/vocal-feedback`, {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            setAiFeedback(result.data);
+            setShowFeedback(true);
+          } else {
+            throw new Error(result.message || 'Failed to generate feedback');
+          }
+        } else {
+          throw new Error('Backend health check failed');
+        }
+      } catch (backendError) {
+        console.log('Backend not available, using mock feedback:', backendError);
+        
+        // Generate mock feedback
+        const mockFeedback = generateMockFeedback(analysisResult);
+        setAiFeedback(mockFeedback);
+        setShowFeedback(true);
+        setFeedbackError('Backend not connected - showing demo feedback. Connect to backend for real AI analysis.');
+      }
+      
+    } catch (error) {
+      console.error('Error generating AI feedback:', error);
+      
+      // Fallback to mock feedback
+      const mockFeedback = generateMockFeedback(analysisResult);
+      setAiFeedback(mockFeedback);
+      setShowFeedback(true);
+      setFeedbackError('Using demo feedback. Connect to backend for real AI analysis.');
+    } finally {
+      setIsGeneratingFeedback(false);
+    }
+  }, [audioBlob, currentLyrics, vocalProfile]);
+
+  // Generate mock feedback for frontend testing
+  const generateMockFeedback = (analysisResult: any) => {
+    const voiceType = analysisResult.voice_type || 'tenor';
+    const meanPitch = analysisResult.mean_pitch || 280;
+    
+    return {
+      ...analysisResult,
+      ai_feedback: {
+        overall_assessment: {
+          score: 7,
+          strengths: [
+            "Good pitch stability in your comfortable range",
+            "Clear vocal tone and articulation",
+            "Consistent breath support on sustained notes"
+          ],
+          areas_for_improvement: [
+            "Work on breath control for longer phrases",
+            "Expand your vocal range gradually",
+            "Practice vibrato consistency"
+          ],
+          confidence_level: "medium"
+        },
+        technical_feedback: {
+          pitch_accuracy: {
+            assessment: "Your pitch accuracy shows good potential with room for improvement.",
+            specific_issues: [
+              "Minor pitch variations in sustained notes",
+              "Slight flatness on higher notes"
+            ],
+            exercises: [
+              "Practice with a piano or pitch app daily",
+              "Sustained note exercises in your comfortable range",
+              "Scale practice focusing on pitch precision"
+            ]
+          },
+          breath_control: {
+            assessment: "Your breath control needs focused attention.",
+            specific_issues: [
+              "Short phrase length on longer notes",
+              "Inconsistent breath support in upper register"
+            ],
+            exercises: [
+              "Diaphragmatic breathing exercises for 10 minutes daily",
+              "Lip trills for breath control and support",
+              "Sustained vowel exercises (Ah, Oh, Ee)"
+            ]
+          },
+          vocal_technique: {
+            assessment: "You have a good foundation with room for technical refinement.",
+            specific_issues: [
+              "Slight tension in upper register",
+              "Inconsistent vocal placement across range"
+            ],
+            exercises: [
+              "Vocal warm-ups before every practice session",
+              "Humming exercises for vocal placement",
+              "Relaxation techniques for tension release"
+            ]
+          }
+        },
+        emotional_expression: {
+          assessment: "You're connecting well with the emotional content of your material.",
+          suggestions: [
+            "Practice with feeling and intention in every note",
+            "Record yourself and listen for emotional impact",
+            "Study performances of songs you love emotionally"
+          ],
+          performance_tips: [
+            "Use facial expressions to enhance emotional delivery",
+            "Practice in front of a mirror to see your expression",
+            "Connect with the lyrics on a personal level"
+          ]
+        },
+        practice_recommendations: {
+          immediate_focus: "Work on breath control exercises for 10 minutes, then practice sustained notes in your comfortable range.",
+          daily_exercises: [
+            "5 minutes of vocal warm-ups",
+            "10 minutes of breath control practice",
+            "15 minutes of pitch accuracy exercises",
+            "10 minutes of song practice with emotional focus"
+          ],
+          weekly_goals: [
+            "Improve breath support for longer phrases",
+            "Expand vocal range by one note in each direction",
+            "Learn one new song that challenges your range"
+          ],
+          long_term_development: "Build a consistent daily practice routine focusing on technique, breath control, and emotional expression."
+        },
+        motivational_message: "You're making excellent progress! Your dedication to practice is showing in your improved pitch accuracy and vocal tone. Keep up the great work!",
+        next_session_prep: "Prepare a song you love to sing and focus on emotional connection. Also, have your pitch app ready for accuracy exercises."
+      },
+      feedback_source: "mock_ai",
+      generated_at: new Date().toISOString()
+    };
+  };
+
   // Use the voice analysis hook with memoized callback
   const {
     isRecording,
@@ -99,12 +278,22 @@ const Practice: React.FC = () => {
     }
   }, [recordingComplete, audioBlob, user, isAnalyzing, analysisComplete]); // Removed analyzeVoice from deps
 
+  // Auto-generate AI feedback when analysis is complete
+  useEffect(() => {
+    if (analysisComplete && analysisResult && !aiFeedback) {
+      generateAIFeedback(analysisResult);
+    }
+  }, [analysisComplete, analysisResult, aiFeedback, generateAIFeedback]);
+
   // Custom start recording with 15-second limit
   const handleStartRecording = async () => {
     // Reset session saved state when starting new recording
     setSessionSaved(false);
     setSaveStatus('idle');
     setSaveError(null);
+    setAiFeedback(null);
+    setShowFeedback(false);
+    setFeedbackError(null);
     
     await startRecording();
     
@@ -122,6 +311,9 @@ const Practice: React.FC = () => {
     setSessionSaved(false);
     setSaveStatus('idle');
     setSaveError(null);
+    setAiFeedback(null);
+    setShowFeedback(false);
+    setFeedbackError(null);
   };
 
   const formatTime = (seconds: number) => {
@@ -341,6 +533,25 @@ const Practice: React.FC = () => {
                   )}
                 </div>
 
+                {/* View Full AI Feedback Button */}
+                {aiFeedback && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4 flex justify-center"
+                  >
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsFeedbackModalOpen(true)}
+                      className="px-6 py-2 bg-gradient-to-r from-purple-accent to-blue-accent text-white font-medium rounded-lg hover:opacity-90 transition-all flex items-center space-x-2"
+                    >
+                      <MessageSquare size={16} />
+                      <span>View Full AI Feedback</span>
+                    </motion.button>
+                  </motion.div>
+                )}
+
                 {/* Save Status */}
                 {saveStatus !== 'idle' && (
                   <div className="mt-6 flex items-center justify-center">
@@ -427,6 +638,87 @@ const Practice: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* AI Feedback Section */}
+                    {isGeneratingFeedback && (
+                      <div className="bg-dark-lighter rounded-lg p-4 border border-purple-accent/30">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Loader2 size={16} className="animate-spin text-purple-accent" />
+                          <span className="text-sm text-purple-accent">Generating AI feedback...</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {aiFeedback && showFeedback && (
+                      <div className="bg-dark-lighter rounded-lg p-4 border border-green-accent/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-green-accent flex items-center">
+                            <MessageSquare size={16} className="mr-2" />
+                            AI Vocal Coach Feedback
+                          </h4>
+                          <button
+                            onClick={() => setShowFeedback(!showFeedback)}
+                            className="text-xs text-gray-400 hover:text-white"
+                          >
+                            {showFeedback ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+                        
+                        {showFeedback && (
+                          <div className="space-y-3 text-sm">
+                            {/* Overall Score */}
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-300">Overall Score:</span>
+                              <span className="font-bold text-green-accent">
+                                {aiFeedback.ai_feedback?.overall_assessment?.score}/10
+                              </span>
+                            </div>
+
+                            {/* Key Strengths */}
+                            <div>
+                              <div className="text-green-400 font-medium mb-1">Strengths:</div>
+                              <ul className="text-gray-300 ml-4 space-y-1">
+                                {aiFeedback.ai_feedback?.overall_assessment?.strengths?.slice(0, 2).map((strength: string, index: number) => (
+                                  <li key={index} className="list-disc text-xs">{strength}</li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Areas for Improvement */}
+                            <div>
+                              <div className="text-yellow-400 font-medium mb-1">Focus Areas:</div>
+                              <ul className="text-gray-300 ml-4 space-y-1">
+                                {aiFeedback.ai_feedback?.overall_assessment?.areas_for_improvement?.slice(0, 2).map((area: string, index: number) => (
+                                  <li key={index} className="list-disc text-xs">{area}</li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Quick Tips */}
+                            <div>
+                              <div className="text-blue-accent font-medium mb-1">Quick Tips:</div>
+                              <div className="text-gray-300 text-xs">
+                                {aiFeedback.ai_feedback?.practice_recommendations?.immediate_focus}
+                              </div>
+                            </div>
+
+                            {/* Motivational Message */}
+                            <div className="bg-gradient-to-r from-purple-accent/20 to-blue-accent/20 rounded p-2">
+                              <div className="text-xs text-purple-accent font-medium mb-1">💪 Motivation:</div>
+                              <div className="text-gray-300 text-xs italic">
+                                "{aiFeedback.ai_feedback?.motivational_message}"
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {feedbackError && (
+                      <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                        <p className="text-red-400 text-xs">{feedbackError}</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <ul className="text-base text-gray-300 space-y-3">
@@ -467,6 +759,24 @@ const Practice: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Practice History */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card"
+        >
+          <h3 className="text-lg font-semibold text-white mb-4">Recent Practice Sessions</h3>
+          
+          <div className="bg-dark-lighter rounded-lg border border-dark-accent p-4">
+            <div className="text-center text-gray-400 py-8">
+              <Mic size={48} className="mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">No practice sessions yet</p>
+              <p className="text-sm">Complete your first practice session to see your progress here</p>
+            </div>
+          </div>
+        </motion.div>
+
         <LettaChat
           isOpen={isLettaOpen}
           onClose={() => setIsLettaOpen(false)}
@@ -474,6 +784,13 @@ const Practice: React.FC = () => {
           conversationType="exercise_guidance"
         />
       </motion.div>
+
+      {/* RENDER THE MODAL HERE */}
+      <FeedbackModal 
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        feedback={aiFeedback}
+      />
     </>
   );
 };
