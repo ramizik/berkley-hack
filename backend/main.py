@@ -1446,5 +1446,138 @@ async def create_vapi_assistant(request: Request):
         logger.error(f"Error creating VAPI assistant: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create VAPI assistant: {str(e)}")
 
+@app.get("/api/letta/evaluate-progress/{user_id}")
+async def evaluate_user_progress(
+    user_id: str = Path(..., description="User ID")
+):
+    """
+    Evaluate user's vocal progress using a dedicated Letta agent
+    Returns a simple boolean flag to determine if user should see achievement card
+    """
+    try:
+        logger.info(f"Evaluating progress for user {user_id}")
+        
+        # Check if we have Letta available
+        if not LETTA_AVAILABLE or not letta_coach:
+            logger.warning("Letta service not available, returning default")
+            return JSONResponse(content={
+                "success": True,
+                "showAchievement": False,
+                "reason": "Letta service not available"
+            })
+        
+        # Get user's recent vocal history from database
+        recent_sessions = []
+        if supabase:
+            try:
+                # Get last 5 vocal analysis sessions
+                response = supabase.table('vocal_analysis_history').select('*').eq(
+                    'user_id', user_id
+                ).order('created_at', desc=True).limit(5).execute()
+                
+                if response.data:
+                    recent_sessions = response.data
+                    logger.info(f"Found {len(recent_sessions)} recent sessions for user {user_id}")
+            except Exception as e:
+                logger.error(f"Error fetching vocal history: {str(e)}")
+        
+        # If no sessions found, return false
+        if not recent_sessions:
+            return JSONResponse(content={
+                "success": True,
+                "showAchievement": False,
+                "reason": "No practice sessions found"
+            })
+        
+        # Simple progress logic using existing data
+        # Check if user has been consistent (at least 3 sessions)
+        has_consistency = len(recent_sessions) >= 3
+        
+        # Check if there's improvement in key metrics
+        has_improvement = False
+        if len(recent_sessions) >= 2:
+            latest = recent_sessions[0]
+            previous = recent_sessions[1]
+            
+            # Check jitter improvement (lower is better)
+            if latest.get('jitter') and previous.get('jitter'):
+                jitter_improved = float(latest['jitter']) < float(previous['jitter'])
+                
+            # Check shimmer improvement (lower is better)
+            shimmer_improved = False
+            if latest.get('shimmer') and previous.get('shimmer'):
+                shimmer_improved = float(latest['shimmer']) < float(previous['shimmer'])
+                
+            # Check vibrato consistency
+            vibrato_consistent = False
+            if latest.get('vibrato_rate') and previous.get('vibrato_rate'):
+                vibrato_diff = abs(float(latest['vibrato_rate']) - float(previous['vibrato_rate']))
+                vibrato_consistent = vibrato_diff < 0.5  # Within 0.5 Hz is consistent
+                
+            has_improvement = jitter_improved or shimmer_improved or vibrato_consistent
+        
+        # Determine if achievement should be shown
+        show_achievement = has_consistency and has_improvement
+        
+        # Prepare context for Letta agent evaluation
+        evaluation_context = {
+            "session_count": len(recent_sessions),
+            "has_consistency": has_consistency,
+            "has_improvement": has_improvement,
+            "latest_metrics": {
+                "jitter": recent_sessions[0].get('jitter') if recent_sessions else None,
+                "shimmer": recent_sessions[0].get('shimmer') if recent_sessions else None,
+                "vibrato_rate": recent_sessions[0].get('vibrato_rate') if recent_sessions else None
+            } if recent_sessions else {}
+        }
+        
+        # If enhanced Letta is available, try to get more sophisticated evaluation
+        if ENHANCED_LETTA_AVAILABLE:
+            try:
+                # Create a simple query for the Letta agent
+                letta_query = f"""Based on these metrics, should the user see an achievement card?
+                Sessions: {evaluation_context['session_count']}
+                Consistency: {evaluation_context['has_consistency']}
+                Improvement: {evaluation_context['has_improvement']}
+                
+                Reply with just TRUE or FALSE."""
+                
+                # Try to use existing Letta conversation infrastructure
+                if letta_coach and hasattr(letta_coach, 'letta_client') and letta_coach.letta_client:
+                    # Use the existing agent to evaluate
+                    response = letta_coach.letta_client.agents.messages.create(
+                        agent_id=letta_coach.letta_agent_id,
+                        messages=[{"role": "user", "content": letta_query}]
+                    )
+                    
+                    # Extract response
+                    for msg in response.messages:
+                        if hasattr(msg, 'content') and msg.content:
+                            content = msg.content.upper()
+                            if "TRUE" in content:
+                                show_achievement = True
+                                break
+                            elif "FALSE" in content:
+                                show_achievement = False
+                                break
+                                
+            except Exception as e:
+                logger.warning(f"Enhanced Letta evaluation failed, using simple logic: {str(e)}")
+        
+        return JSONResponse(content={
+            "success": True,
+            "showAchievement": show_achievement,
+            "reason": f"Consistency: {has_consistency}, Improvement: {has_improvement}",
+            "evaluationContext": evaluation_context
+        })
+        
+    except Exception as e:
+        logger.error(f"Error evaluating user progress: {str(e)}")
+        return JSONResponse(content={
+            "success": False,
+            "showAchievement": False,
+            "error": str(e)
+        })
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080) 

@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Add non-sensitive environment variables here if needed
+  # For sensitive variables like API keys, use Netlify UI instead
 
 [[redirects]]
   from = "/*"
