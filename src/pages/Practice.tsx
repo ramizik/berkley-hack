@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Volume2, Pause, Play, Save, RotateCcw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mic, Volume2, Pause, Play, Save, RotateCcw, CheckCircle, AlertCircle, Music } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
 import { supabase } from '../lib/supabase';
+import LyricsRequest from '../components/practice/LyricsRequest';
 
 const Practice: React.FC = () => {
   const { profile } = useVocalProfile();
@@ -12,6 +13,7 @@ const Practice: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [sessionSaved, setSessionSaved] = useState(false);
+  const [currentLyrics, setCurrentLyrics] = useState<string>('');
 
   // Save practice session to vocal_analysis_history table
   const savePracticeSession = useCallback(async (results: any) => {
@@ -144,13 +146,32 @@ const Practice: React.FC = () => {
         exit={{ opacity: 0 }}
         className="page-transition max-w-7xl mx-auto"
       >
+        {/* Lyrics Request Section */}
+        <LyricsRequest onLyricsGenerated={setCurrentLyrics} />
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="card mb-8"
         >
           <h2 className="text-2xl font-bold gradient-text mb-6">Practice Session</h2>
-          
+          {/* Display Current Lyrics if Available */}
+          {currentLyrics && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 bg-gradient-to-r from-green-accent/10 to-blue-accent/10 border border-green-accent/30 rounded-lg p-4"
+            >
+              <div className="flex items-center mb-3">
+                <Music size={20} className="text-green-accent mr-2" />
+                <h3 className="font-semibold text-green-accent">Practice Lyrics</h3>
+              </div>
+              <div className="bg-dark/50 rounded p-3 max-h-32 overflow-y-auto">
+                <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
+                  {currentLyrics}
+                </pre>
+              </div>
+            </motion.div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <div className="flex flex-col items-center justify-center bg-gradient-to-br from-purple-accent/10 to-blue-accent/10 rounded-lg p-8 min-h-[400px] border border-purple-accent/20">
