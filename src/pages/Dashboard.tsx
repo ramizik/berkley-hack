@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useVocalProfile } from '../context/VocalProfileContext';
-import { TrendingUp, Mic, ArrowRight, MessageCircle, BookOpen } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { TrendingUp, Mic, ArrowRight, MessageCircle, BookOpen, Brain, CheckCircle, Sparkles } from 'lucide-react';
 import EnhancedLettaWidget from '../components/letta/EnhancedLettaWidget';
+import LettaChat from '../components/letta/LettaChat';
 
 const Dashboard: React.FC = () => {
   const { profile, loading } = useVocalProfile();
+  const { user } = useAuth();
+  const [isLettaOpen, setIsLettaOpen] = useState(false);
   const today = new Date();
   
   return (
@@ -241,8 +245,97 @@ const Dashboard: React.FC = () => {
         </motion.div>
       </div>
 
+      {/* Letta AI Agents Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="card mb-6 md:mb-8"
+      >
+        <h3 className="text-xl md:text-2xl font-semibold text-white mb-4 flex items-center">
+          <Brain size={20} className="mr-2 text-purple-accent" />
+          AI Vocal Coaching Agents
+        </h3>
+        <p className="text-gray-300 leading-relaxed mb-6 text-base">
+          Choose from specialized Letta AI agents that analyze your vocal performance and provide personalized coaching insights.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <motion.button
+            onClick={() => setIsLettaOpen(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-r from-purple-accent to-red-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+          >
+            <Brain size={16} />
+            <span className="text-base">Personality Coach Agent</span>
+          </motion.button>
+          
+          <motion.button
+            onClick={() => {
+              // Trigger health monitoring analysis
+              if (user) {
+                // Call health monitoring API
+                fetch(`${import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080'}/api/letta/health/monitor`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    user_id: user.id,
+                    vocal_metrics: profile,
+                    environmental_data: {}
+                  })
+                }).then(res => res.json()).then(data => {
+                  console.log('Health monitoring result:', data);
+                  setIsLettaOpen(true);
+                });
+              }
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-r from-blue-accent to-purple-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+          >
+            <CheckCircle size={16} />
+            <span className="text-base">Health & Wellness Agent</span>
+          </motion.button>
+          
+          <motion.button
+            onClick={() => {
+              // Trigger personality evolution analysis
+              if (user) {
+                // Call personality analysis API
+                fetch(`${import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080'}/api/letta/personality/analyze`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    user_id: user.id,
+                    vocal_metrics: profile
+                  })
+                }).then(res => res.json()).then(data => {
+                  console.log('Personality evolution result:', data);
+                  setIsLettaOpen(true);
+                });
+              }
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-r from-red-accent to-blue-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+          >
+            <Sparkles size={16} />
+            <span className="text-base">Progress Evolution Agent</span>
+          </motion.button>
+        </div>
+      </motion.div>
+
       {/* Enhanced Letta Widget */}
       <EnhancedLettaWidget />
+
+      {/* Letta Chat */}
+      <LettaChat
+        isOpen={isLettaOpen}
+        onClose={() => setIsLettaOpen(false)}
+        fetchAiReport={null}
+        conversationType="daily_feedback"
+      />
     </motion.div>
   );
 };
