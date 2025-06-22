@@ -35,7 +35,7 @@ pydantic>=2.0.0,<3.0.0
 # HTTP requests for Fetch AI API
 requests==2.31.0
 
-# HTTP client for Groq SDK compatibility
+# HTTP client for Groq SDK compatibility and VAPI proxy endpoints
 httpx>=0.24.0,<1.0.0
 
 # Letta AI integration (latest available version)

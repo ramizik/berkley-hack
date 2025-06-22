@@ -1,6 +1,7 @@
 import os
 import logging
 import tempfile
+import json
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Path, Request
@@ -9,11 +10,15 @@ from fastapi.responses import JSONResponse
 import uvicorn
 import asyncio
 import requests
+import httpx
 
 # Import our custom voice analyzer and Fetch AI service
 from voice_analyzer import VoiceAnalyzer
 from fetch_ai_service import FetchAiVocalCoach
 from fetch_ai_agent import vocal_agent
+
+# Import lesson feedback service
+from lesson_feedback_service import lesson_feedback_service
 
 # Supabase client for database access
 from supabase import create_client, Client
@@ -747,6 +752,360 @@ def _generate_fallback_lyrics(genre: str, mood: str, theme: str, difficulty: str
     difficulty_template = mood_templates.get(difficulty, mood_templates.get("beginner", mood_templates.get("intermediate", mood_templates.get("advanced"))))
     
     return difficulty_template
+
+@app.post("/api/lesson-feedback")
+async def store_lesson_feedback(
+    user_id: str = Form(...),
+    lesson_data: str = Form(...),  # JSON string of lesson data
+    session_time: int = Form(...),
+    recording_duration: int = Form(...),
+    voice_analysis: str = Form(...),  # JSON string of voice analysis
+    ai_feedback: str = Form(...),
+    voice_metrics: str = Form(...)  # JSON string of voice metrics
+):
+    """
+    Store lesson completion feedback
+    """
+    try:
+        logger.info(f"Storing lesson feedback for user {user_id}")
+        
+        # Parse JSON strings
+        lesson_dict = json.loads(lesson_data)
+        voice_analysis_dict = json.loads(voice_analysis)
+        voice_metrics_dict = json.loads(voice_metrics)
+        
+        # Prepare feedback data
+        feedback_data = {
+            "user_id": user_id,
+            "lesson": lesson_dict,
+            "session_time": session_time,
+            "recording_duration": recording_duration,
+            "voice_analysis": voice_analysis_dict,
+            "ai_feedback": ai_feedback,
+            "voice_metrics": voice_metrics_dict
+        }
+        
+        # Store feedback
+        success = await lesson_feedback_service.store_lesson_feedback(feedback_data)
+        
+        if success:
+            return JSONResponse(content={
+                "success": True,
+                "message": "Lesson feedback stored successfully",
+                "data": {"user_id": user_id}
+            })
+        else:
+            raise HTTPException(status_code=500, detail="Failed to store lesson feedback")
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in lesson feedback: {str(e)}")
+        raise HTTPException(status_code=400, detail="Invalid JSON format")
+    except Exception as e:
+        logger.error(f"Error storing lesson feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to store feedback: {str(e)}")
+
+@app.get("/api/lesson-feedback/{user_id}/latest")
+async def get_latest_lesson_feedback(
+    user_id: str = Path(..., description="User ID")
+):
+    """
+    Get latest lesson feedback for a user
+    """
+    try:
+        logger.info(f"Getting latest lesson feedback for user {user_id}")
+        
+        # Get latest feedback
+        feedback = await lesson_feedback_service.get_latest_lesson_feedback(user_id)
+        
+        if feedback:
+            return JSONResponse(content={
+                "success": True,
+                "message": "Latest lesson feedback retrieved",
+                "data": feedback
+            })
+        else:
+            return JSONResponse(content={
+                "success": True,
+                "message": "No lesson feedback found",
+                "data": None
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting latest lesson feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get feedback: {str(e)}")
+
+@app.get("/api/vapi-context/{user_id}")
+async def get_vapi_lesson_context(
+    user_id: str = Path(..., description="User ID")
+):
+    """
+    Get VAPI lesson context for a user based on their latest lesson
+    """
+    try:
+        logger.info(f"Creating VAPI lesson context for user {user_id}")
+        
+        # Create VAPI context
+        context = await lesson_feedback_service.create_vapi_context(user_id)
+        
+        if context:
+            # Convert to dict for JSON response
+            context_dict = {
+                "lesson_title": context.lesson_title,
+                "lesson_category": context.lesson_category,
+                "lesson_level": context.lesson_level,
+                "session_duration": context.session_duration,
+                "recording_duration": context.recording_duration,
+                "voice_type": context.voice_type,
+                "mean_pitch": context.mean_pitch,
+                "vocal_range": context.vocal_range,
+                "voice_metrics": context.voice_metrics,
+                "ai_feedback": context.ai_feedback,
+                "completion_time": context.completion_time,
+                "recommendations": context.recommendations,
+                "performance_insights": context.performance_insights,
+                "quality_score": context.quality_score
+            }
+            
+            # Create enhanced formatted message for VAPI with more coaching context
+            strengths = ", ".join(context.performance_insights.get("strengths", []))
+            areas_for_improvement = ", ".join(context.performance_insights.get("areas_for_improvement", []))
+            quality_rating = context.quality_score.get("rating", "Good")
+            quality_factors = ", ".join(context.quality_score.get("factors", []))
+            
+            vapi_message = f"""The user just completed a {context.lesson_title} lesson ({context.lesson_category} training, {context.lesson_level} level). 
+
+Session Summary:
+- Duration: {context.session_duration}
+- Recording: {context.recording_duration}
+- Completed at: {context.completion_time}
+- Quality Rating: {quality_rating}/100
+
+Voice Analysis:
+- Voice Type: {context.voice_type}
+- Mean Pitch: {context.mean_pitch} Hz
+- Vocal Range: {context.vocal_range}
+
+Performance Highlights:
+- Strengths: {strengths if strengths else "Consistent effort and engagement"}
+- Focus Areas: {areas_for_improvement if areas_for_improvement else "Continue building fundamentals"}
+
+Session Quality Factors: {quality_factors}
+
+AI Feedback: {context.ai_feedback}
+
+Key Recommendations: {', '.join(context.recommendations)}
+
+I'm here to provide personalized vocal coaching based on this detailed analysis. I can help you understand your results, work on specific techniques, or plan your next practice session."""
+            
+            return JSONResponse(content={
+                "success": True,
+                "message": "Enhanced VAPI lesson context created",
+                "data": {
+                    "context": context_dict,
+                    "vapi_message": vapi_message,
+                    "has_lesson_data": True,
+                    "coaching_variables": {
+                        # Additional variables for VAPI assistant overrides
+                        "qualityRating": quality_rating,
+                        "qualityScore": str(context.quality_score.get("score", 0)),
+                        "strengths": strengths or "Consistent practice",
+                        "improvementAreas": areas_for_improvement or "Continue fundamentals",
+                        "nextSteps": ", ".join(context.performance_insights.get("next_steps", [])),
+                        "technicalNotes": ", ".join(context.performance_insights.get("technical_notes", []))
+                    }
+                }
+            })
+        else:
+            return JSONResponse(content={
+                "success": True,
+                "message": "No recent lesson data found",
+                "data": {
+                    "context": None,
+                    "vapi_message": "Hello! I'm your AI vocal coach. I don't see any recent lesson data, but I'm here to help with your vocal training. What would you like to work on today?",
+                    "has_lesson_data": False,
+                    "coaching_variables": {
+                        "qualityRating": "New Student",
+                        "strengths": "Ready to learn",
+                        "improvementAreas": "Establish practice routine",
+                        "nextSteps": "Start with fundamental exercises"
+                    }
+                }
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating VAPI lesson context: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create context: {str(e)}")
+
+# VAPI Proxy Endpoints to handle CORS issues
+@app.post("/api/vapi/call/start")
+async def start_vapi_call(request: Request):
+    """
+    Proxy endpoint to start a VAPI call
+    Handles CORS by proxying requests through our backend
+    """
+    try:
+        # Get VAPI API key from environment
+        vapi_api_key = os.getenv("VAPI_API_KEY", "7af82e9d-df22-44e3-8461-669668e88783")
+        
+        # Get request body
+        body = await request.json()
+        
+        logger.info(f"Starting VAPI call with payload: {json.dumps(body, indent=2)}")
+        
+        # Make request to VAPI
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.vapi.ai/call/web",
+                headers={
+                    "Authorization": f"Bearer {vapi_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json=body,
+                timeout=30.0
+            )
+            
+            logger.info(f"VAPI response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                logger.info(f"VAPI call started successfully: {response_data}")
+                return JSONResponse(content=response_data)
+            else:
+                logger.error(f"VAPI call failed: {response.status_code} - {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"VAPI call failed: {response.text}"
+                )
+                
+    except Exception as e:
+        logger.error(f"Error starting VAPI call: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to start VAPI call: {str(e)}")
+
+@app.post("/api/vapi/call/stop")
+async def stop_vapi_call(request: Request):
+    """
+    Proxy endpoint to stop a VAPI call
+    """
+    try:
+        # Get VAPI API key from environment
+        vapi_api_key = os.getenv("VAPI_API_KEY", "7af82e9d-df22-44e3-8461-669668e88783")
+        
+        # Get request body
+        body = await request.json()
+        call_id = body.get("callId")
+        
+        if not call_id:
+            raise HTTPException(status_code=400, detail="callId is required")
+        
+        logger.info(f"Stopping VAPI call: {call_id}")
+        
+        # Make request to VAPI
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"https://api.vapi.ai/call/{call_id}/stop",
+                headers={
+                    "Authorization": f"Bearer {vapi_api_key}",
+                    "Content-Type": "application/json"
+                },
+                timeout=30.0
+            )
+            
+            logger.info(f"VAPI stop response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                logger.info(f"VAPI call stopped successfully: {response_data}")
+                return JSONResponse(content=response_data)
+            else:
+                logger.error(f"VAPI stop failed: {response.status_code} - {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"VAPI stop failed: {response.text}"
+                )
+                
+    except Exception as e:
+        logger.error(f"Error stopping VAPI call: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to stop VAPI call: {str(e)}")
+
+@app.get("/api/vapi/call/{call_id}")
+async def get_vapi_call(call_id: str):
+    """
+    Proxy endpoint to get VAPI call details
+    """
+    try:
+        # Get VAPI API key from environment
+        vapi_api_key = os.getenv("VAPI_API_KEY", "7af82e9d-df22-44e3-8461-669668e88783")
+        
+        logger.info(f"Getting VAPI call details: {call_id}")
+        
+        # Make request to VAPI
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://api.vapi.ai/call/{call_id}",
+                headers={
+                    "Authorization": f"Bearer {vapi_api_key}"
+                },
+                timeout=30.0
+            )
+            
+            logger.info(f"VAPI get call response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                return JSONResponse(content=response_data)
+            else:
+                logger.error(f"VAPI get call failed: {response.status_code} - {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"VAPI get call failed: {response.text}"
+                )
+                
+    except Exception as e:
+        logger.error(f"Error getting VAPI call: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get VAPI call: {str(e)}")
+
+@app.post("/api/vapi/assistant")
+async def create_vapi_assistant(request: Request):
+    """
+    Proxy endpoint to create or update VAPI assistant
+    """
+    try:
+        # Get VAPI API key from environment
+        vapi_api_key = os.getenv("VAPI_API_KEY", "7af82e9d-df22-44e3-8461-669668e88783")
+        
+        # Get request body
+        body = await request.json()
+        
+        logger.info(f"Creating/updating VAPI assistant with payload: {json.dumps(body, indent=2)}")
+        
+        # Make request to VAPI
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.vapi.ai/assistant",
+                headers={
+                    "Authorization": f"Bearer {vapi_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json=body,
+                timeout=30.0
+            )
+            
+            logger.info(f"VAPI assistant response status: {response.status_code}")
+            
+            if response.status_code in [200, 201]:
+                response_data = response.json()
+                logger.info(f"VAPI assistant created/updated successfully: {response_data}")
+                return JSONResponse(content=response_data)
+            else:
+                logger.error(f"VAPI assistant creation failed: {response.status_code} - {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"VAPI assistant creation failed: {response.text}"
+                )
+                
+    except Exception as e:
+        logger.error(f"Error creating VAPI assistant: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create VAPI assistant: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080) 
