@@ -35,11 +35,14 @@ pydantic>=2.0.0,<3.0.0
 # HTTP requests for Fetch AI API
 requests==2.31.0
 
+# HTTP client for Groq SDK compatibility
+httpx>=0.24.0,<1.0.0
+
 # Letta AI integration (latest available version)
 letta-client>=0.1.167
 
 # Timezone support
 pytz
 
-# Groq SDK for lyrics generation
-groq==0.4.2 
+# Groq SDK for lyrics generation (updated to latest stable version)
+groq==0.4.3 

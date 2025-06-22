@@ -45,6 +45,9 @@ RUN mkdir -p /app/.fetchai
 # Test the build
 RUN python test_build.py
 
+# Test Groq SDK compatibility
+RUN python test_groq_fix.py
+
 # Expose port (Cloud Run will override this)
 EXPOSE 8080
 
