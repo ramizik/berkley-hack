@@ -7,6 +7,7 @@ import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
 import { supabase } from '../lib/supabase';
 import LyricsRequest from '../components/practice/LyricsRequest';
 import LettaChat from '../components/letta/LettaChat';
+import FeedbackModal from '../components/practice/FeedbackModal';
 
 const Practice: React.FC = () => {
   const { profile } = useVocalProfile();
