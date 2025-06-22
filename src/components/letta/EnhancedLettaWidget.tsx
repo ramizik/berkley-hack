@@ -63,10 +63,10 @@ const EnhancedLettaWidget: React.FC = () => {
 
   const getRiskLevelColor = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'low': return 'text-green-400';
-      case 'moderate': return 'text-yellow-400';
-      case 'high': return 'text-orange-400';
-      case 'critical': return 'text-red-400';
+      case 'low': return 'text-blue-accent';
+      case 'moderate': return 'text-pink-600';
+      case 'high': return 'text-pink-600';
+      case 'critical': return 'text-pink-600';
       default: return 'text-gray-400';
     }
   };
@@ -83,18 +83,18 @@ const EnhancedLettaWidget: React.FC = () => {
 
   const getPersonalityTypeColor = (type: string) => {
     const colors = {
-      analytical: 'text-blue-400',
-      expressive: 'text-pink-400',
-      methodical: 'text-green-400',
-      intuitive: 'text-purple-400',
-      perfectionist: 'text-orange-400'
+      analytical: 'text-blue-accent',
+      expressive: 'text-purple-accent',
+      methodical: 'text-blue-accent',
+      intuitive: 'text-purple-accent',
+      perfectionist: 'text-pink-600'
     };
     return colors[type as keyof typeof colors] || 'text-gray-400';
   };
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-pink-500/30 rounded-xl p-6">
+      <div className="card">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-700 rounded mb-4"></div>
           <div className="space-y-3">
@@ -108,11 +108,11 @@ const EnhancedLettaWidget: React.FC = () => {
 
   if (error || !insights) {
     return (
-      <div className="bg-gray-900 border border-red-500/30 rounded-xl p-6">
-        <p className="text-red-400">Unable to load AI insights</p>
+      <div className="card border-pink-600/30">
+        <p className="text-pink-600">Unable to load AI insights</p>
         <button
           onClick={fetchDashboardInsights}
-          className="mt-2 text-sm text-pink-400 hover:text-pink-300"
+          className="mt-2 text-sm text-purple-accent hover:text-purple-light transition-colors"
         >
           Try again
         </button>
@@ -122,20 +122,24 @@ const EnhancedLettaWidget: React.FC = () => {
 
   return (
     <>
-      <div className="bg-gray-900 border border-pink-500/30 rounded-xl p-6">
+      <div className="card">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-white flex items-center">
-            <Brain size={24} className="mr-2 text-pink-400" />
-            AI Vocal Intelligence
-          </h3>
+          <div>
+            <h3 className="text-xl font-semibold text-white flex items-center">
+              <Brain size={24} className="mr-2 text-purple-accent" />
+              AI Vocal Intelligence
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">Powered by Letta</p>
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => {
                 setSelectedContext('personality');
                 setIsLettaOpen(true);
               }}
-              className="px-3 py-1 bg-pink-600/20 text-pink-400 rounded-lg text-sm hover:bg-pink-600/30 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
             >
+              <MessageCircle size={16} />
               Personality
             </button>
             <button
@@ -143,8 +147,9 @@ const EnhancedLettaWidget: React.FC = () => {
                 setSelectedContext('health');
                 setIsLettaOpen(true);
               }}
-              className="px-3 py-1 bg-green-600/20 text-green-400 rounded-lg text-sm hover:bg-green-600/30 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
             >
+              <MessageCircle size={16} />
               Health
             </button>
             <button
@@ -155,7 +160,7 @@ const EnhancedLettaWidget: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors"
             >
               <MessageCircle size={16} />
-              Chat
+              Progress
             </button>
           </div>
         </div>
@@ -165,11 +170,11 @@ const EnhancedLettaWidget: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gray-800/50 border border-pink-500/20 rounded-lg p-4"
+            className="bg-dark-lighter border border-purple-accent/20 rounded-lg p-4"
           >
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-white flex items-center">
-                <Sparkles size={18} className="mr-2 text-pink-400" />
+                <Sparkles size={18} className="mr-2 text-purple-accent" />
                 Vocal Personality
               </h4>
               <span className={`text-sm font-medium ${getPersonalityTypeColor(insights.personality_summary.type)}`}>
@@ -179,25 +184,25 @@ const EnhancedLettaWidget: React.FC = () => {
             
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="text-center">
-                <div className="text-lg font-bold text-pink-400">
+                <div className="text-lg font-bold text-purple-accent">
                   {insights.personality_summary.evolution_score.toFixed(1)}
                 </div>
                 <div className="text-gray-400">Evolution Score</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-blue-400">
+                <div className="text-lg font-bold text-blue-accent">
                   {insights.personality_summary.days_training}
                 </div>
                 <div className="text-gray-400">Days Training</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-green-400">
+                <div className="text-lg font-bold text-pink-600">
                   {insights.personality_summary.insights_learned}
                 </div>
                 <div className="text-gray-400">Insights Learned</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-purple-400">
+                <div className="text-lg font-bold text-purple-accent">
                   {insights.personality_summary.adaptation_score.toFixed(1)}
                 </div>
                 <div className="text-gray-400">Adaptation</div>
@@ -210,11 +215,11 @@ const EnhancedLettaWidget: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gray-800/50 border border-green-500/20 rounded-lg p-4"
+            className="bg-dark-lighter border border-blue-accent/20 rounded-lg p-4"
           >
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-white flex items-center">
-                <Heart size={18} className="mr-2 text-green-400" />
+                <Heart size={18} className="mr-2 text-blue-accent" />
                 Vocal Health
               </h4>
               <span className={`text-sm font-medium flex items-center gap-1 ${getRiskLevelColor(insights.health_summary.risk_level)}`}>
@@ -225,13 +230,13 @@ const EnhancedLettaWidget: React.FC = () => {
             
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="text-center">
-                <div className="text-lg font-bold text-green-400">
+                <div className="text-lg font-bold text-blue-accent">
                   {insights.health_summary.strain_indicators}
                 </div>
                 <div className="text-gray-400">Strain Indicators</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-blue-400">
+                <div className="text-lg font-bold text-purple-accent">
                   {insights.health_summary.optimal_windows}
                 </div>
                 <div className="text-gray-400">Optimal Windows</div>
@@ -245,21 +250,21 @@ const EnhancedLettaWidget: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* AI Recommendations */}
+        {/* Letta Recommendations */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4"
+          className="bg-dark-lighter border border-dark-accent rounded-lg p-4"
         >
           <h4 className="font-semibold text-white mb-3 flex items-center">
-            <Target size={18} className="mr-2 text-yellow-400" />
-            AI Recommendations
+            <Target size={18} className="mr-2 text-pink-600" />
+            Letta Recommendations for Improvement
           </h4>
           <div className="space-y-2">
             {insights.recommendations.map((recommendation, index) => (
               <div key={index} className="flex items-start gap-2 text-sm text-gray-300">
-                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-1.5 h-1.5 bg-pink-600 rounded-full mt-2 flex-shrink-0"></div>
                 <span>{recommendation}</span>
               </div>
             ))}
@@ -282,7 +287,7 @@ const EnhancedLettaWidget: React.FC = () => {
               initial={{ width: 0 }}
               animate={{ width: `${(insights.personality_summary.evolution_score / 10) * 100}%` }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full"
+              className="bg-gradient-to-r from-purple-accent to-pink-600 h-2 rounded-full"
             />
           </div>
         </motion.div>
@@ -298,4 +303,4 @@ const EnhancedLettaWidget: React.FC = () => {
   );
 };
 
-export default EnhancedLettaWidget; 
+export default EnhancedLettaWidget;

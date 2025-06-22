@@ -43,8 +43,8 @@ export interface VAPIExerciseResponse {
 
 export interface VAPICallRequest {
   assistant: {
-    id: string;
-  }; // Fixed: Changed from string to object with id field as API expects
+    // Remove id property - VAPI API expects assistant object without id
+  };
   customer?: {
     number?: string;
     name?: string;
@@ -115,9 +115,7 @@ class VAPIClient {
       const truncatedUserId = userId.length > 35 ? userId.substring(0, 35) : userId;
       
       const callRequest: VAPICallRequest = {
-        assistant: {
-          id: this.voiceAgentId
-        }, // Fixed: Pass assistant as object with id field
+        assistant: {}, // Empty object as required by VAPI API
         customer: {
           name: `User_${truncatedUserId}`, // Fixed: Ensure under 40 characters
         },
@@ -162,7 +160,7 @@ class VAPIClient {
       const truncatedUserId = userId.length > 35 ? userId.substring(0, 35) : userId;
       
       const callRequest: VAPICallRequest = {
-        assistant: this.voiceAgentId, // Fixed: Pass assistant ID as string directly
+        assistant: {}, // Empty object as required by VAPI API
         customer: {
           name: `User_${truncatedUserId}`, // Fixed: Ensure under 40 characters
         },
@@ -213,16 +211,6 @@ class VAPIClient {
    */
   async generateCustomLine(metrics: VAPIMetrics, userId: string): Promise<VAPICustomLineResponse> {
     try {
-      // If using fallback credentials, immediately return fallback response
-      if (this.apiKey === 'fallback' || this.voiceAgentId === 'fallback') {
-        console.log('Using fallback custom line generation');
-        return {
-          success: true,
-          custom_line: this.getFallbackCustomLine(metrics.voice_type, metrics.mean_pitch),
-          vapi_session_id: `fallback_${userId}_${Date.now()}`
-        };
-      }
-
       // Try VAPI first, then fallback to hardcoded lines
       try {
         // Start a call with the VAPI voice agent
@@ -280,12 +268,6 @@ class VAPIClient {
     try {
       const userId = sessionId.split('_')[1] || 'unknown';
       
-      // If using fallback credentials, immediately return fallback response
-      if (this.apiKey === 'fallback' || this.voiceAgentId === 'fallback') {
-        console.log('Using fallback exercise generation');
-        return this.getFallbackExercise(metrics, customLine);
-      }
-      
       // Try VAPI first, then fallback to hardcoded exercises
       try {
         // Start a call with the VAPI voice agent for exercise generation
@@ -329,12 +311,6 @@ class VAPIClient {
    */
   async testConnection(): Promise<boolean> {
     try {
-      // If using fallback credentials, return false to indicate fallback mode
-      if (this.apiKey === 'fallback' || this.voiceAgentId === 'fallback') {
-        console.log('VAPI using fallback mode - no real connection available');
-        return false;
-      }
-      
       // Check if environment variables are set
       if (!this.apiKey || !this.voiceAgentId) {
         console.warn('VAPI credentials not configured. Using fallback mode.');
@@ -373,12 +349,6 @@ class VAPIClient {
    */
   async getVoiceAgentDetails(): Promise<any> {
     try {
-      // If using fallback credentials, return fallback details immediately
-      if (this.apiKey === 'fallback' || this.voiceAgentId === 'fallback') {
-        console.log('Using fallback voice agent details');
-        return this.getFallbackAgentDetails();
-      }
-      
       if (!this.apiKey || !this.voiceAgentId) {
         return this.getFallbackAgentDetails();
       }
@@ -519,6 +489,50 @@ class VAPIClient {
   }
 
   private getFallbackExercise(metrics: VAPIMetrics, customLine: string): VAPIExerciseResponse {
+    // Generate personalized feedback based on actual voice analysis parameters
+    let feedback = `Your performance of "${customLine}" shows `;
+    let targetFocus = "general_technique";
+    let difficulty = "intermediate";
+    
+    // Analyze jitter (pitch variation)
+    if (metrics.jitter > 2.0) {
+      feedback += "some pitch instability. ";
+      targetFocus = "pitch_stability";
+      difficulty = "beginner";
+    } else if (metrics.jitter > 1.0) {
+      feedback += "moderate pitch control. ";
+      targetFocus = "pitch_accuracy";
+    } else {
+      feedback += "good pitch stability. ";
+      targetFocus = "advanced_technique";
+      difficulty = "advanced";
+    }
+    
+    // Analyze shimmer (amplitude variation)
+    if (metrics.shimmer > 3.0) {
+      feedback += "Your volume consistency needs work. ";
+      targetFocus = "volume_control";
+    } else if (metrics.shimmer > 1.5) {
+      feedback += "Volume control is improving. ";
+    } else {
+      feedback += "Excellent volume consistency. ";
+    }
+    
+    // Analyze vibrato
+    if (metrics.vibrato_rate > 0.8) {
+      feedback += "Your vibrato is well-developed. ";
+    } else if (metrics.vibrato_rate > 0.4) {
+      feedback += "Vibrato development is progressing. ";
+      targetFocus = "vibrato_control";
+    } else {
+      feedback += "Focus on developing natural vibrato. ";
+      targetFocus = "vibrato_development";
+    }
+    
+    // Analyze voice type and range
+    feedback += `Your ${metrics.voice_type} voice with range from ${metrics.lowest_note} to ${metrics.highest_note} has good potential. `;
+    
+    // Select exercise based on analysis
     const exercises = [
       {
         title: "Sustained Breath Control Exercise",
@@ -540,15 +554,33 @@ class VAPIClient {
         duration_seconds: 240,
         target_focus: "vibrato_control",
         difficulty: "intermediate"
+      },
+      {
+        title: "Volume Control Exercise",
+        description: "Practice singing the same note with varying dynamics (pp, p, mp, mf, f, ff). Focus on maintaining pitch accuracy while changing volume. This helps develop consistent breath support.",
+        duration_seconds: 200,
+        target_focus: "volume_control",
+        difficulty: "intermediate"
+      },
+      {
+        title: "Advanced Vocal Agility",
+        description: "Practice rapid scale passages and arpeggios within your comfortable range. Focus on clean transitions between notes and maintaining consistent tone quality throughout the exercise.",
+        duration_seconds: 360,
+        target_focus: "advanced_technique",
+        difficulty: "advanced"
       }
     ];
 
-    const exercise = exercises[Math.floor(Math.random() * exercises.length)];
+    // Select exercise based on target focus
+    let selectedExercise = exercises.find(ex => ex.target_focus === targetFocus) || exercises[1];
+    
+    // Adjust difficulty based on analysis
+    selectedExercise.difficulty = difficulty;
     
     return {
       success: true,
-      feedback: `Your performance of "${customLine}" shows good potential. Focus on maintaining consistent breath support and pitch accuracy throughout the phrase.`,
-      exercise_prompt: exercise
+      feedback: feedback,
+      exercise_prompt: selectedExercise
     };
   }
 }
@@ -557,14 +589,7 @@ class VAPIClient {
 let vapiClient: VAPIClient;
 
 try {
-  // Check if environment variables are properly set
-  if (!VAPI_API_KEY || !VAPI_VOICE_AGENT_ID) {
-    console.warn('VAPI environment variables not set. Using fallback mode.');
-    // Create a fallback client that will use backend API
-    vapiClient = new VAPIClient('fallback', 'fallback');
-  } else {
-    vapiClient = new VAPIClient(VAPI_API_KEY, VAPI_VOICE_AGENT_ID);
-  }
+  vapiClient = new VAPIClient(VAPI_API_KEY || '', VAPI_VOICE_AGENT_ID || '');
 } catch (error) {
   console.warn('VAPI client initialization failed:', error);
   // Create a fallback client that will use backend API

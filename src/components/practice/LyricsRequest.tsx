@@ -118,7 +118,7 @@ No more holding back, no more fear
 I'm breaking free, the time is here`
       }
     };
-
+    
     const template = lyricsTemplates.pop?.[mood.toLowerCase() as keyof typeof lyricsTemplates.pop] || 
       lyricsTemplates.pop.happy;
     
@@ -150,7 +150,7 @@ I'm breaking free, the time is here`
               <Music size={20} className="text-white" />
             </div>
             <div className="text-left">
-              <h3 className="font-semibold text-white">Request Practice Lyrics</h3>
+              <h3 className="font-semibold text-white">Find a song for a practice based on your current mood powered by Groq</h3>
               <p className="text-sm text-gray-300">Get 15-second lyrics for your practice session</p>
             </div>
           </div>
@@ -360,4 +360,4 @@ I'm breaking free, the time is here`
   );
 };
 
-export default LyricsRequest; 
+export default LyricsRequest;

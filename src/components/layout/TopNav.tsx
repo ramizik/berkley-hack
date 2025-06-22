@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Mic, Bell, User, LogOut, Menu, X } from 'lucide-react';
+import { Mic, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const TopNav: React.FC = () => {
@@ -56,13 +56,6 @@ const TopNav: React.FC = () => {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="text-gray-300 hover:text-white relative transition-colors">
-              <Bell size={20} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red text-white text-xs rounded-full flex items-center justify-center">
-                3
-              </span>
-            </button>
-
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
                 <User size={16} className="text-white" />
@@ -136,14 +129,7 @@ const TopNav: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between px-3 py-2">
-                  <button className="text-gray-300 hover:text-white relative transition-colors">
-                    <Bell size={20} />
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red text-white text-xs rounded-full flex items-center justify-center">
-                      3
-                    </span>
-                  </button>
-                  
+                <div className="flex items-center justify-end px-3 py-2">
                   <button
                     onClick={() => {
                       signOut();
