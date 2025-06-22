@@ -39,4 +39,7 @@ requests==2.31.0
 letta-client>=0.1.167
 
 # Timezone support
-pytz 
+pytz
+
+# Groq SDK for lyrics generation
+groq==0.4.2 
