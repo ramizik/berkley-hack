@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Clock, BarChart, BookOpen, Mic, MicOff, Brain, Sparkles, AlertTriangle, X, CheckCircle, Target, Phone, PhoneOff, Play, Pause, Volume2, VolumeX, TrendingUp, Zap, Settings, RotateCcw, Music, Headphones, Activity, BarChart3, ArrowRight, Users, Radio, Square, AudioWaveform as Waveform, MessageCircle } from 'lucide-react';
+import { Clock, BarChart, BookOpen, Mic, MicOff, Brain, Sparkles, AlertTriangle, X, CheckCircle, Target, Phone, PhoneOff, Play, Pause, Volume2, VolumeX, TrendingUp, Zap, RotateCcw, Music, Headphones, Activity, BarChart3, ArrowRight, Users, Radio, Square, AudioWaveform as Waveform, MessageCircle, Star } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
@@ -25,7 +25,6 @@ const Lessons: React.FC = () => {
   const { profile } = useVocalProfile();
   const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedLevel, setSelectedLevel] = useState<string>('all');
   
   // Session management
   const [sessionActive, setSessionActive] = useState(false);
@@ -35,7 +34,6 @@ const Lessons: React.FC = () => {
   
   // UI state
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   
   // UI feedback state
@@ -173,8 +171,8 @@ const Lessons: React.FC = () => {
 
   // Complete session
   const completeSession = () => {
-    stopCoachingSession();
-    showNotificationMessage('success', 'Lesson completed successfully!');
+    // Move to complete phase instead of stopping session immediately
+    setSessionState(prev => ({ ...prev, phase: 'complete' }));
   };
 
   // Handle regular lesson start
@@ -205,13 +203,6 @@ const Lessons: React.FC = () => {
     { id: 'rhythm', name: 'Rhythm' },
     { id: 'range', name: 'Vocal Range' },
     { id: 'tone', name: 'Tone Quality' },
-  ];
-  
-  const levels = [
-    { id: 'all', name: 'All Levels' },
-    { id: 'beginner', name: 'Beginner' },
-    { id: 'intermediate', name: 'Intermediate' },
-    { id: 'advanced', name: 'Advanced' },
   ];
   
   const lessons = [
@@ -285,8 +276,7 @@ const Lessons: React.FC = () => {
   
   const filteredLessons = lessons.filter(lesson => {
     const categoryMatch = selectedCategory === 'all' || lesson.category === selectedCategory;
-    const levelMatch = selectedLevel === 'all' || lesson.level === selectedLevel;
-    return categoryMatch && levelMatch;
+    return categoryMatch;
   });
 
   return (
@@ -313,7 +303,7 @@ const Lessons: React.FC = () => {
               {notificationType === 'success' && <CheckCircle size={20} />}
               {notificationType === 'error' && <AlertTriangle size={20} />}
               {notificationType === 'info' && <Activity size={20} />}
-              <span className="font-medium">{notificationMessage}</span>
+              <span className="font-medium text-base">{notificationMessage}</span>
             </div>
           </motion.div>
         )}
@@ -333,18 +323,18 @@ const Lessons: React.FC = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                    <span className="text-white font-medium">AI COACHING SESSION</span>
+                    <span className="text-white font-medium text-lg">AI COACHING SESSION</span>
                   </div>
-                  <div className="text-white font-mono text-lg">{formatTime(sessionTime)}</div>
+                  <div className="text-white font-mono text-xl">{formatTime(sessionTime)}</div>
                   {currentLesson && (
-                    <div className="text-purple-accent font-medium">{currentLesson.title}</div>
+                    <div className="text-purple-accent font-medium text-lg">{currentLesson.title}</div>
                   )}
                 </div>
                 
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={stopCoachingSession}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2 text-base"
                   >
                     <X size={16} />
                     <span>End Session</span>
@@ -383,10 +373,10 @@ const Lessons: React.FC = () => {
                       className="space-y-8"
                     >
                       <div className="mb-8">
-                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                        <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">
                           Welcome to {currentLesson?.title}
                         </h3>
-                        <h4 className="text-lg md:text-xl text-purple-accent mb-4">
+                        <h4 className="text-xl md:text-2xl text-purple-accent mb-4">
                           {currentLesson?.category?.charAt(0).toUpperCase() + currentLesson?.category?.slice(1)} Training
                         </h4>
                       </div>
@@ -394,33 +384,33 @@ const Lessons: React.FC = () => {
                       {/* Lesson Details */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                         <div className="bg-dark-lighter border border-dark-accent rounded-lg p-4">
-                          <div className="text-purple-accent font-medium text-sm mb-1">Category</div>
-                          <div className="text-white font-semibold">
+                          <div className="text-purple-accent font-medium text-base mb-1">Category</div>
+                          <div className="text-white font-semibold text-lg">
                             {currentLesson?.category?.charAt(0).toUpperCase() + currentLesson?.category?.slice(1)}
                           </div>
                         </div>
                         <div className="bg-dark-lighter border border-dark-accent rounded-lg p-4">
-                          <div className="text-purple-accent font-medium text-sm mb-1">Level</div>
-                          <div className="text-white font-semibold">
+                          <div className="text-purple-accent font-medium text-base mb-1">Level</div>
+                          <div className="text-white font-semibold text-lg">
                             {currentLesson?.level?.charAt(0).toUpperCase() + currentLesson?.level?.slice(1)}
                           </div>
                         </div>
                         <div className="bg-dark-lighter border border-dark-accent rounded-lg p-4">
-                          <div className="text-purple-accent font-medium text-sm mb-1">Duration</div>
-                          <div className="text-white font-semibold">{currentLesson?.duration} min</div>
+                          <div className="text-purple-accent font-medium text-base mb-1">Duration</div>
+                          <div className="text-white font-semibold text-lg">{currentLesson?.duration} min</div>
                         </div>
                       </div>
 
                       {/* What You'll Learn */}
                       <div className="bg-dark-lighter border border-dark-accent rounded-lg p-6 max-w-2xl mx-auto">
-                        <h5 className="text-white font-medium mb-3 flex items-center">
+                        <h5 className="text-white font-medium mb-3 flex items-center text-lg">
                           <Target size={16} className="mr-2 text-purple-accent" />
                           What You'll Learn
                         </h5>
-                        <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                        <p className="text-gray-300 text-base leading-relaxed mb-4">
                           {currentLesson?.description}
                         </p>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-base text-gray-400">
                           <strong>Focus Areas:</strong>
                           <ul className="mt-2 space-y-1">
                             {currentLesson?.category === 'pitch' && (
@@ -466,12 +456,12 @@ const Lessons: React.FC = () => {
                       <div className="flex flex-col items-center space-y-4">
                         <button
                           onClick={() => setSessionState(prev => ({ ...prev, phase: 'recording' }))}
-                          className="px-8 py-3 bg-gradient-primary text-white font-medium rounded-lg hover:opacity-90 transition-all flex items-center space-x-2"
+                          className="px-8 py-3 bg-gradient-primary text-white font-medium rounded-lg hover:opacity-90 transition-all flex items-center space-x-2 text-lg"
                         >
                           <Mic size={20} />
                           <span>Start Recording</span>
                         </button>
-                        <p className="text-gray-400 text-sm max-w-md text-center">
+                        <p className="text-gray-400 text-base max-w-md text-center">
                           When you're ready, click the button above to start recording your voice for analysis.
                         </p>
                       </div>
@@ -488,9 +478,9 @@ const Lessons: React.FC = () => {
                       className="space-y-8"
                     >
                       <div className="mb-8">
-                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">Record Your Voice</h3>
-                        <h4 className="text-lg md:text-xl text-red-accent mb-4">Sing Any Melody or Scale</h4>
-                        <p className="text-gray-300 max-w-3xl mx-auto leading-relaxed text-sm md:text-base">
+                        <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">Record Your Voice</h3>
+                        <h4 className="text-xl md:text-2xl text-red-accent mb-4">Sing Any Melody or Scale</h4>
+                        <p className="text-gray-300 max-w-3xl mx-auto leading-relaxed text-base md:text-lg">
                           Record yourself singing any comfortable melody, scale, or vocal exercise. This will help AI analyze your voice.
                         </p>
                       </div>
@@ -526,27 +516,32 @@ const Lessons: React.FC = () => {
                         <div className="text-center space-y-3">
                           {isRecording && (
                             <div className="space-y-2">
-                              <div className="text-3xl md:text-4xl font-bold text-red-accent">
-                                {formatTime(recordingDuration)}
-                              </div>
-                              <div className="text-sm md:text-base text-gray-400">
-                                Recording... ({formatTime(Math.max(0, 15 - recordingDuration))} remaining)
-                              </div>
+                              {/* Current note display - NO ANIMATION */}
                               {currentNote && (
-                                <div className="mt-4 p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-                                  <div className="text-2xl md:text-3xl font-bold text-purple-accent">
+                                <div className="mb-4">
+                                  <div className="text-4xl md:text-5xl font-bold text-purple-accent mb-1">
                                     {displayedNote || currentNote}
                                   </div>
-                                  <div className="text-sm text-gray-400">
+                                  <div className="text-base text-gray-400">
                                     {currentPitch} Hz
                                   </div>
                                 </div>
                               )}
+                              
+                              {/* Recording timer */}
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-white mb-1">
+                                  {formatTime(recordingDuration)}
+                                </div>
+                                <div className="text-base text-gray-400">
+                                  {formatTime(Math.max(0, 15 - recordingDuration))} remaining
+                                </div>
+                              </div>
                             </div>
                           )}
                           
                           {recordingComplete && (
-                            <div className="text-green-400 font-medium text-lg">
+                            <div className="text-green-400 font-medium text-xl">
                               <CheckCircle size={24} className="inline mr-2" />
                               Recording Complete!
                             </div>
@@ -555,7 +550,7 @@ const Lessons: React.FC = () => {
                           {isAnalyzing && (
                             <div className="space-y-2">
                               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
-                              <div className="text-blue-400 font-medium">Analyzing your voice...</div>
+                              <div className="text-blue-400 font-medium text-lg">Analyzing your voice...</div>
                             </div>
                           )}
                         </div>
@@ -573,9 +568,9 @@ const Lessons: React.FC = () => {
                       className="space-y-8"
                     >
                       <div className="mb-8">
-                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">Your AI Coaching Results</h3>
-                        <h4 className="text-lg md:text-xl text-green-400 mb-4">Personalized Feedback & Exercise</h4>
-                        <p className="text-gray-300 max-w-3xl mx-auto leading-relaxed text-sm md:text-base">
+                        <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">Your AI Coaching Results</h3>
+                        <h4 className="text-xl md:text-2xl text-green-400 mb-4">Personalized Feedback & Exercise</h4>
+                        <p className="text-gray-300 max-w-3xl mx-auto leading-relaxed text-base md:text-lg">
                           Based on your voice analysis, here's your personalized feedback and recommended exercise.
                         </p>
                       </div>
@@ -584,38 +579,38 @@ const Lessons: React.FC = () => {
                       {sessionState.feedback && (
                         <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-8 max-w-3xl mx-auto">
                           <div className="flex items-center justify-between mb-4">
-                            <h5 className="font-semibold text-blue-400 flex items-center">
+                            <h5 className="font-semibold text-blue-400 flex items-center text-lg">
                               <Brain size={20} className="mr-2" />
                               AI Analysis Results
                             </h5>
                           </div>
-                          <p className="text-white text-center leading-relaxed">{sessionState.feedback}</p>
+                          <p className="text-white text-center leading-relaxed text-base">{sessionState.feedback}</p>
                         </div>
                       )}
 
                       {/* Voice Analysis Results */}
                       {sessionState.analysisResult && (
                         <div className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-6 max-w-3xl mx-auto">
-                          <h5 className="font-semibold text-purple-accent mb-4 flex items-center">
+                          <h5 className="font-semibold text-purple-accent mb-4 flex items-center text-lg">
                             <BarChart3 size={20} className="mr-2" />
                             Voice Metrics
                           </h5>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-2 gap-4 text-base">
                             <div className="bg-dark-lighter rounded-lg p-3">
                               <div className="text-gray-400 mb-1">Voice Type</div>
-                              <div className="text-white font-semibold">{sessionState.analysisResult.voice_type}</div>
+                              <div className="text-white font-semibold text-lg">{sessionState.analysisResult.voice_type}</div>
                             </div>
                             <div className="bg-dark-lighter rounded-lg p-3">
                               <div className="text-gray-400 mb-1">Mean Pitch</div>
-                              <div className="text-white font-semibold">{sessionState.analysisResult.mean_pitch} Hz</div>
+                              <div className="text-white font-semibold text-lg">{sessionState.analysisResult.mean_pitch} Hz</div>
                             </div>
                             <div className="bg-dark-lighter rounded-lg p-3">
                               <div className="text-gray-400 mb-1">Vocal Range</div>
-                              <div className="text-white font-semibold">{sessionState.analysisResult.lowest_note} - {sessionState.analysisResult.highest_note}</div>
+                              <div className="text-white font-semibold text-lg">{sessionState.analysisResult.lowest_note} - {sessionState.analysisResult.highest_note}</div>
                             </div>
                             <div className="bg-dark-lighter rounded-lg p-3">
                               <div className="text-gray-400 mb-1">Vibrato Rate</div>
-                              <div className="text-white font-semibold">{sessionState.analysisResult.vibrato_rate} Hz</div>
+                              <div className="text-white font-semibold text-lg">{sessionState.analysisResult.vibrato_rate} Hz</div>
                             </div>
                           </div>
                         </div>
@@ -625,10 +620,61 @@ const Lessons: React.FC = () => {
                       <div className="flex flex-col items-center space-y-4">
                         <button
                           onClick={completeSession}
-                          className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center space-x-2"
+                          className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center space-x-2 text-lg"
                         >
                           <CheckCircle size={20} />
                           <span>Complete Session</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Completion Phase */}
+                  {sessionState.phase === 'complete' && (
+                    <motion.div
+                      key="complete"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="space-y-8"
+                    >
+                      {/* Completion Card */}
+                      <div className="bg-gradient-to-br from-green-500/20 to-blue-500/20 border border-green-500/30 rounded-xl p-8 max-w-3xl mx-auto">
+                        <div className="text-center mb-6">
+                          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Star size={32} className="text-green-400" />
+                          </div>
+                          <h3 className="text-3xl font-bold text-white mb-4">Nice job completing this lesson!</h3>
+                        </div>
+                        
+                        <div className="text-gray-300 leading-relaxed space-y-4 text-center text-base">
+                          <p>Practice makes patterns — and repeating this lesson will help you build stronger habits.</p>
+                          <p>The AI will keep tracking your vocal development every time you return.</p>
+                          <p>Think of it like brushing up on a language — every round makes your voice more confident.</p>
+                          <p className="font-medium text-white text-lg">Stay consistent, stay curious, and let your voice evolve naturally.</p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                        <button
+                          onClick={() => {
+                            // Restart the same lesson
+                            setSessionState({ phase: 'welcome' });
+                            resetRecording();
+                          }}
+                          className="px-6 py-3 bg-purple-accent hover:bg-purple-light text-white font-medium rounded-lg transition-colors flex items-center space-x-2 text-base"
+                        >
+                          <RotateCcw size={20} />
+                          <span>Practice Again</span>
+                        </button>
+                        
+                        <button
+                          onClick={stopCoachingSession}
+                          className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white font-medium rounded-lg transition-colors flex items-center space-x-2 text-base"
+                        >
+                          <CheckCircle size={20} />
+                          <span>Finish & Return</span>
                         </button>
                       </div>
                     </motion.div>
@@ -646,39 +692,27 @@ const Lessons: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">Voice Lessons</h1>
-            <p className="text-gray-300 text-lg">Master your voice with personalized AI coaching</p>
+            <p className="text-gray-300 text-xl mb-4">Master your voice with personalized AI coaching</p>
+            
+            {/* Description */}
+            <div className="text-gray-400 text-base leading-relaxed max-w-2xl">
+              <p className="mb-2">Learn the fundamentals of singing through short, guided lessons.</p>
+              <p className="mb-2">Each lesson focuses on a specific skill — pitch, breath control, tone, or resonance.</p>
+              <p className="mb-2">Exercises are beginner-friendly and designed for daily practice.</p>
+              <p>Perfect for building a strong vocal foundation.</p>
+            </div>
           </div>
           
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 bg-dark-lighter hover:bg-dark-accent rounded-lg transition-colors"
+              onClick={() => setIsLettaOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors text-base font-medium"
             >
-              <Settings size={20} className="text-gray-300" />
+              <Brain size={16} />
+              AI Lesson Advisor
             </button>
           </div>
         </div>
-
-        {/* Settings Panel */}
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="card overflow-hidden"
-            >
-              <h3 className="text-lg font-semibold text-white mb-4">Debug Information</h3>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {debugInfo.slice(-3).map((message, index) => (
-                  <div key={index} className="text-sm text-gray-300">
-                    {message}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
         
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="flex overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
@@ -686,7 +720,7 @@ const Lessons: React.FC = () => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full mr-2 text-sm font-medium transition-colors ${
+                className={`flex-shrink-0 px-4 py-2 rounded-full mr-2 text-base font-medium transition-colors ${
                   selectedCategory === category.id
                     ? 'bg-gradient-primary text-white'
                     : 'bg-dark-lighter text-gray-300 hover:bg-dark-accent hover:text-white'
@@ -695,31 +729,6 @@ const Lessons: React.FC = () => {
                 {category.name}
               </button>
             ))}
-          </div>
-          
-          <div className="flex gap-2 flex-shrink-0">
-            <div className="relative">
-              <select
-                value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
-                className="appearance-none pl-10 pr-8 py-2 rounded-lg bg-dark border border-dark-accent text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-accent focus:border-transparent text-sm"
-              >
-                {levels.map(level => (
-                  <option key={level.id} value={level.id}>
-                    {level.name}
-                  </option>
-                ))}
-              </select>
-              <Filter className="absolute left-3 top-2.5 text-gray-500" size={16} />
-            </div>
-            
-            <button
-              onClick={() => setIsLettaOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors text-sm font-medium"
-            >
-              <Brain size={16} />
-              AI Lesson Advisor
-            </button>
           </div>
         </div>
         
@@ -741,33 +750,23 @@ const Lessons: React.FC = () => {
               </div>
               
               <div className="flex items-center justify-between mb-3">
-                <div className={`text-xs px-2 py-1 rounded-full ${
-                  lesson.category === 'pitch' ? 'bg-purple-accent/20 text-purple-light' :
-                  lesson.category === 'breath' ? 'bg-blue-accent/20 text-blue-light' :
-                  lesson.category === 'rhythm' ? 'bg-red-accent/20 text-red-light' :
-                  lesson.category === 'range' ? 'bg-yellow-500/20 text-yellow-400' :
-                  'bg-green-500/20 text-green-400'
-                }`}>
+                <div className="text-sm px-2 py-1 rounded-full bg-gray-600/20 text-white">
                   {lesson.category.charAt(0).toUpperCase() + lesson.category.slice(1)}
                 </div>
-                <div className={`text-xs px-2 py-1 rounded-full ${
-                  lesson.level === 'beginner' ? 'bg-green-500/20 text-green-400' :
-                  lesson.level === 'intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
-                  'bg-red-accent/20 text-red-light'
-                }`}>
+                <div className="text-sm px-2 py-1 rounded-full bg-gray-600/20 text-white">
                   {lesson.level.charAt(0).toUpperCase() + lesson.level.slice(1)}
                 </div>
               </div>
               
-              <h3 className="text-lg font-semibold mb-2 text-white">{lesson.title}</h3>
-              <p className="text-gray-300 text-sm mb-4 line-clamp-2">{lesson.description}</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">{lesson.title}</h3>
+              <p className="text-gray-300 text-base mb-4 line-clamp-2">{lesson.description}</p>
               
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center text-gray-400 text-sm">
+                <div className="flex items-center text-gray-400 text-base">
                   <Clock size={14} className="mr-1" />
                   <span>{lesson.duration} min</span>
                 </div>
-                <div className="flex items-center text-yellow-400 text-sm">
+                <div className="flex items-center text-yellow-400 text-base">
                   <span className="mr-1">★</span>
                   <span>{lesson.rating}</span>
                 </div>
@@ -779,7 +778,7 @@ const Lessons: React.FC = () => {
                 <button 
                   onClick={() => startCoachingSession(lesson)}
                   disabled={sessionActive}
-                  className={`w-full py-2 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 ${
+                  className={`w-full py-2 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 text-base ${
                     sessionActive
                       ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
                       : 'bg-gradient-primary text-white hover:opacity-90'
@@ -802,80 +801,6 @@ const Lessons: React.FC = () => {
             </motion.div>
           ))}
         </div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4">Recommended Learning Path</h3>
-          
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-1 bg-purple-accent/30"></div>
-            
-            <div className="space-y-6">
-              {[
-                { 
-                  icon: <BookOpen size={20} />, 
-                  title: 'Fundamentals', 
-                  description: 'Master the basics of breathing and pitch',
-                  current: true,
-                  courses: ['Breath Control Fundamentals', 'Pitch Accuracy Basics']
-                },
-                { 
-                  icon: <Mic size={20} />, 
-                  title: 'Technique Building', 
-                  description: 'Develop core techniques for better singing',
-                  current: false,
-                  courses: ['Rhythm and Timing Practice', 'Tone Production']
-                },
-                { 
-                  icon: <BarChart size={20} />, 
-                  title: 'Advanced Skills', 
-                  description: 'Refine your skills and expand your abilities',
-                  current: false,
-                  courses: ['Expanding Your Vocal Range', 'Advanced Tone Quality']
-                }
-              ].map((phase, index) => (
-                <div key={index} className="relative ml-12">
-                  <div className={`absolute -left-16 w-8 h-8 rounded-full flex items-center justify-center ${
-                    phase.current 
-                      ? 'bg-purple-accent text-white'
-                      : 'bg-dark-lighter text-purple-accent border border-purple-accent/30'
-                  }`}>
-                    {phase.icon}
-                  </div>
-                  
-                  <div className={`p-4 rounded-lg ${
-                    phase.current
-                      ? 'bg-purple-accent/10 border border-purple-accent/30'
-                      : 'bg-dark-lighter border border-dark-accent'
-                  }`}>
-                    <h4 className="font-medium text-white">{phase.title}</h4>
-                    <p className="text-sm text-gray-300 mb-3">{phase.description}</p>
-                    
-                    <div className="space-y-2">
-                      {phase.courses.map((course, i) => (
-                        <div key={i} className="flex items-center">
-                          <div className={`w-2 h-2 rounded-full mr-2 ${
-                            phase.current ? 'bg-purple-accent' : 'bg-gray-500'
-                          }`}></div>
-                          <span className="text-sm text-gray-300">{course}</span>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {phase.current && (
-                      <button className="mt-3 text-sm font-medium text-purple-accent hover:text-purple-light transition-colors">
-                        Continue Learning
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
 
         <LettaChat
           isOpen={isLettaOpen}

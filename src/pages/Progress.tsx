@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronDown, TrendingUp, Clock, BarChart2, ChevronLeft, ChevronRight, FileText, Sparkles, AlertCircle, RefreshCw, CheckCircle, Zap, X, MessageCircle, Brain } from 'lucide-react';
+import { Calendar, ChevronDown, TrendingUp, Clock, BarChart2, ChevronLeft, ChevronRight, FileText, Sparkles, AlertCircle, RefreshCw, CheckCircle, X, MessageCircle, Brain } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import LettaChat from '../components/letta/LettaChat';
@@ -85,7 +85,6 @@ const Progress: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [reportSource, setReportSource] = useState<'cache' | 'generated' | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null);
   const [isLettaOpen, setIsLettaOpen] = useState(false);
 
   // Fetch Fetch AI reports
@@ -119,23 +118,6 @@ const Progress: React.FC = () => {
     }
   };
 
-  // Fetch agent status
-  const fetchAgentStatus = async () => {
-    try {
-      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
-      const response = await fetch(`${apiUrl}/api/agent/status`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          setAgentStatus(data.data);
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching agent status:', err);
-    }
-  };
-
   // Fetch reports when selected date changes
   useEffect(() => {
     // Don't run the effect if the user is not yet available
@@ -144,7 +126,6 @@ const Progress: React.FC = () => {
     }
     const dateStr = toYYYYMMDD(selectedDate);
     fetchReports(dateStr);
-    fetchAgentStatus();
   }, [user?.id, toYYYYMMDD(selectedDate)]); // Use the formatted string for dependency
 
   // Get current report
@@ -217,9 +198,9 @@ const Progress: React.FC = () => {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
-        return <TrendingUp size={14} className="text-green-400" />;
+        return <TrendingUp size={14} className="text-blue-accent" />;
       case 'down':
-        return <TrendingUp size={14} className="text-red-400 rotate-180" />;
+        return <TrendingUp size={14} className="text-red-accent rotate-180" />;
       default:
         return <TrendingUp size={14} className="text-gray-400" />;
     }
@@ -228,9 +209,9 @@ const Progress: React.FC = () => {
   const getTrendColor = (trend: string) => {
     switch (trend) {
       case 'up':
-        return 'text-green-400';
+        return 'text-blue-accent';
       case 'down':
-        return 'text-red-400';
+        return 'text-red-accent';
       default:
         return 'text-gray-400';
     }
@@ -241,29 +222,29 @@ const Progress: React.FC = () => {
 
     return (
       <div className="card mb-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
+        <h3 className="text-xl font-semibold mb-4 flex items-center">
           {title}
           {type === 'vocal' && <Sparkles size={16} className="ml-2 text-purple-accent" />}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Object.entries(metrics).map(([key, metric]) => (
-            <div key={key} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+            <div key={key} className="bg-dark-lighter rounded-lg p-4 border border-dark-accent">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400 capitalize">
+                <span className="text-base text-gray-400 capitalize">
                   {key.replace(/_/g, ' ')}
                 </span>
                 {getTrendIcon(metric.trend)}
               </div>
-              <div className="text-xl font-bold text-white mb-1">
+              <div className="text-2xl font-bold text-white mb-1">
                 {typeof metric.current === 'number' 
                   ? metric.current.toFixed(2) 
                   : metric.current}
               </div>
-              <div className={`text-sm ${getTrendColor(metric.trend)}`}>
+              <div className={`text-base ${getTrendColor(metric.trend)}`}>
                 {formatMetricChange(metric.change)}
               </div>
               {metric.improvement_percentage && (
-                <div className="text-xs text-blue-400 mt-1">
+                <div className="text-sm text-blue-accent mt-1">
                   {metric.improvement_percentage > 0 ? '+' : ''}{metric.improvement_percentage.toFixed(1)}% improvement
                 </div>
               )}
@@ -281,58 +262,21 @@ const Progress: React.FC = () => {
       exit={{ opacity: 0 }}
       className="page-transition max-w-7xl mx-auto"
     >
-      {/* Fetch AI Agent Status */}
+      {/* Page Header with Description */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="card mb-6"
+        className="mb-8"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold gradient-text flex items-center">
-            <Zap size={20} className="mr-2" />
-            Fetch AI Agent Status
-          </h2>
-          <button
-            onClick={fetchAgentStatus}
-            className="flex items-center space-x-2 px-3 py-1 bg-purple-accent/20 hover:bg-purple-accent/30 rounded-lg transition-colors text-sm"
-          >
-            <RefreshCw size={14} />
-            <span>Refresh</span>
-          </button>
-        </div>
+        <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">Progress Overview</h1>
+        <p className="text-gray-300 text-xl mb-4">View detailed reports on your vocal development</p>
         
-        {agentStatus ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
-              <div className="text-sm text-green-400 mb-1">Status</div>
-              <div className="text-white font-semibold flex items-center">
-                <CheckCircle size={14} className="mr-1" />
-                {agentStatus.status}
-              </div>
-            </div>
-            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
-              <div className="text-sm text-blue-400 mb-1">Processed Users</div>
-              <div className="text-white font-semibold">{agentStatus.processed_users_count}</div>
-            </div>
-            <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
-              <div className="text-sm text-purple-400 mb-1">Last Processed</div>
-              <div className="text-white font-semibold">
-                {agentStatus.last_processed_date || 'Never'}
-              </div>
-            </div>
-            <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
-              <div className="text-sm text-orange-400 mb-1">Agent Address</div>
-              <div className="text-white font-semibold text-xs truncate">
-                {agentStatus.agent_address}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-4 text-gray-400">
-            <RefreshCw size={20} className="mx-auto mb-2 animate-spin" />
-            Loading agent status...
-          </div>
-        )}
+        {/* Description */}
+        <div className="text-gray-400 text-base leading-relaxed max-w-3xl">
+          <p className="mb-2">See how your metrics like jitter, shimmer, and vibrato evolve over time.</p>
+          <p className="mb-2">Track improvements and get smart insights from AI.</p>
+          <p>Stay motivated with visual feedback and trend charts.</p>
+        </div>
       </motion.div>
 
       {/* Report Source Indicator */}
@@ -342,10 +286,10 @@ const Progress: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-4"
         >
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-base ${
             reportSource === 'cache' 
-              ? 'bg-green-900/20 text-green-400 border border-green-500/30' 
-              : 'bg-blue-900/20 text-blue-400 border border-blue-500/30'
+              ? 'bg-blue-accent/20 text-blue-accent border border-blue-accent/30' 
+              : 'bg-purple-accent/20 text-purple-accent border border-purple-accent/30'
           }`}>
             {reportSource === 'cache' ? (
               <CheckCircle size={14} className="mr-1" />
@@ -354,7 +298,7 @@ const Progress: React.FC = () => {
             )}
             {reportSource === 'cache' ? 'Cached Report' : 'Generated On-Demand'}
             {lastUpdated && (
-              <span className="ml-2 text-xs opacity-75">
+              <span className="ml-2 text-sm opacity-75">
                 Updated {lastUpdated.toLocaleTimeString()}
               </span>
             )}
@@ -369,7 +313,12 @@ const Progress: React.FC = () => {
         className="card mb-6"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold gradient-text">Progress Overview</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-white">Daily Reports</h2>
+            <p className="text-gray-400 text-base mt-1">
+              Choose a day from your past to review your vocal progress and discuss it with your AI coach.
+            </p>
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateMonth('prev')}
@@ -383,7 +332,7 @@ const Progress: React.FC = () => {
               className="flex items-center space-x-2 px-4 py-2 bg-purple-accent/20 hover:bg-purple-accent/30 rounded-lg transition-colors"
             >
               <Calendar size={16} />
-              <span>{selectedDate.toLocaleDateString('en-US', { 
+              <span className="text-base">{selectedDate.toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
@@ -419,7 +368,7 @@ const Progress: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-white">Select Date</h3>
+                <h3 className="text-xl font-semibold text-white">Select Date</h3>
                 <button
                   onClick={() => setShowCalendar(false)}
                   className="p-1 hover:bg-gray-700/50 rounded-lg transition-colors"
@@ -435,7 +384,7 @@ const Progress: React.FC = () => {
                 >
                   <ChevronLeft size={16} className="text-gray-400" />
                 </button>
-                <h4 className="text-white font-medium">
+                <h4 className="text-white font-medium text-lg">
                   {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </h4>
                 <button
@@ -448,7 +397,7 @@ const Progress: React.FC = () => {
               
               <div className="grid grid-cols-7 gap-1 text-center mb-2">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="text-xs text-gray-400 py-2 font-medium">{day}</div>
+                  <div key={day} className="text-sm text-gray-400 py-2 font-medium">{day}</div>
                 ))}
               </div>
               
@@ -458,7 +407,7 @@ const Progress: React.FC = () => {
                     key={index}
                     onClick={() => selectDate(day.date)}
                     disabled={day.isDisabled}
-                    className={`p-3 text-sm rounded-lg transition-all ${
+                    className={`p-3 text-base rounded-lg transition-all ${
                       day.isSelected
                         ? 'bg-purple-accent text-white shadow-lg'
                         : day.isToday
@@ -476,13 +425,13 @@ const Progress: React.FC = () => {
               <div className="mt-6 flex justify-end space-x-3">
                 <button
                   onClick={() => setShowCalendar(false)}
-                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors text-base"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => setShowCalendar(false)}
-                  className="px-4 py-2 bg-purple-accent text-white rounded-lg hover:bg-purple-light transition-colors"
+                  className="px-4 py-2 bg-purple-accent text-white rounded-lg hover:bg-purple-light transition-colors text-base"
                 >
                   Done
                 </button>
@@ -501,7 +450,7 @@ const Progress: React.FC = () => {
         >
           <div className="flex items-center justify-center py-8">
             <RefreshCw size={24} className="animate-spin text-purple-accent mr-3" />
-            <span className="text-gray-400">Generating Fetch AI report...</span>
+            <span className="text-gray-400 text-lg">Generating Fetch AI report...</span>
           </div>
         </motion.div>
       )}
@@ -511,16 +460,16 @@ const Progress: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card mb-6 border border-red-500/30 bg-red-900/10"
+          className="card mb-6 border border-red-accent/30 bg-red-accent/10"
         >
           <div className="flex items-start">
-            <AlertCircle size={20} className="text-red-400 mr-3 flex-shrink-0 mt-0.5" />
+            <AlertCircle size={20} className="text-red-accent mr-3 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-red-400 font-semibold mb-1">Error Loading Report</h3>
-              <p className="text-red-300 text-sm">{error}</p>
+              <h3 className="text-red-accent font-semibold mb-1 text-lg">Error Loading Report</h3>
+              <p className="text-red-light text-base">{error}</p>
               <button
                 onClick={() => fetchReports(toYYYYMMDD(selectedDate))}
-                className="mt-2 text-sm text-red-400 hover:text-red-300 underline"
+                className="mt-2 text-base text-red-accent hover:text-red-light underline"
               >
                 Try again
               </button>
@@ -538,12 +487,12 @@ const Progress: React.FC = () => {
         >
           {/* Summary */}
           <div className="card">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <FileText size={18} className="mr-2 text-purple-accent" />
-              AI Analysis Summary
+            <h3 className="text-xl font-semibold mb-4 flex items-center">
+              <Brain size={18} className="mr-2 text-purple-accent" />
+              Letta Analysis Summary
             </h3>
-            <p className="text-gray-300 leading-relaxed mb-6">
-              {getCurrentReport()?.summary}
+            <p className="text-gray-300 leading-relaxed mb-6 text-base">
+              You can choose one of the Letta performance agents which are specialized in one particular analysis. Letta knows about your practice sessions on particular day and changes in your voice metrics.
             </p>
             
             {/* Enhanced Letta Integration */}
@@ -552,10 +501,10 @@ const Progress: React.FC = () => {
                 onClick={() => setIsLettaOpen(true)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                className="bg-gradient-to-r from-purple-accent to-red-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
               >
-                <Brain size={18} />
-                <span>Deep Analysis</span>
+                <Brain size={16} />
+                <span className="text-base">Vocal Personality Coach Agent</span>
               </motion.button>
               
               <motion.button
@@ -580,10 +529,10 @@ const Progress: React.FC = () => {
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                className="bg-gradient-to-r from-blue-accent to-purple-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
               >
-                <CheckCircle size={18} />
-                <span>Health Check</span>
+                <CheckCircle size={16} />
+                <span className="text-base">Vocal Health and Wellness Agent</span>
               </motion.button>
               
               <motion.button
@@ -607,10 +556,10 @@ const Progress: React.FC = () => {
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                className="bg-gradient-to-r from-red-accent to-blue-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
               >
-                <Sparkles size={18} />
-                <span>Evolution</span>
+                <Sparkles size={16} />
+                <span className="text-base">Vocal Historical Evolution Agent</span>
               </motion.button>
             </div>
           </div>
@@ -639,22 +588,22 @@ const Progress: React.FC = () => {
           {/* Practice Session Details */}
           {getCurrentReport()?.practice_sessions && (
             <div className="card">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <h3 className="text-xl font-semibold mb-4 flex items-center">
                 <Clock size={18} className="mr-2 text-purple-accent" />
                 Practice Session Details
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
-                  <div className="text-sm text-gray-400 mb-1">Total Sessions</div>
-                  <div className="text-xl font-bold text-white">{getCurrentReport()?.practice_sessions}</div>
+                <div className="bg-dark-lighter rounded-lg p-4 border border-dark-accent">
+                  <div className="text-base text-gray-400 mb-1">Total Sessions</div>
+                  <div className="text-2xl font-bold text-white">{getCurrentReport()?.practice_sessions}</div>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
-                  <div className="text-sm text-gray-400 mb-1">Total Practice Time</div>
-                  <div className="text-xl font-bold text-white">{getCurrentReport()?.total_practice_time} min</div>
+                <div className="bg-dark-lighter rounded-lg p-4 border border-dark-accent">
+                  <div className="text-base text-gray-400 mb-1">Total Practice Time</div>
+                  <div className="text-2xl font-bold text-white">{getCurrentReport()?.total_practice_time} min</div>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
-                  <div className="text-sm text-gray-400 mb-1">Best Time of Day</div>
-                  <div className="text-xl font-bold text-white">{getCurrentReport()?.best_time_of_day}</div>
+                <div className="bg-dark-lighter rounded-lg p-4 border border-dark-accent">
+                  <div className="text-base text-gray-400 mb-1">Best Time of Day</div>
+                  <div className="text-2xl font-bold text-white">{getCurrentReport()?.best_time_of_day}</div>
                 </div>
               </div>
             </div>
@@ -670,13 +619,13 @@ const Progress: React.FC = () => {
           className="card"
         >
           <div className="text-center p-8">
-            <h3 className="text-lg font-semibold text-white mb-2">No Report Available</h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <h3 className="text-xl font-semibold text-white mb-2">No Report Available</h3>
+            <p className="text-gray-400 text-base mb-4">
               There is no Fetch.ai analysis report available for this date.
             </p>
             <button
               onClick={() => fetchReports(toYYYYMMDD(selectedDate))}
-              className="px-4 py-2 bg-purple-accent text-white rounded-lg hover:bg-purple-light transition-colors"
+              className="px-4 py-2 bg-purple-accent text-white rounded-lg hover:bg-purple-light transition-colors text-base"
             >
               Refresh
             </button>

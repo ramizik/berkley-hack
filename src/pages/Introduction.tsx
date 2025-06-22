@@ -189,7 +189,7 @@ const Introduction: React.FC = () => {
                 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/auth')}
-                className="px-8 py-4 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+                className="px-8 py-4 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center text-lg"
               >
                 <Play size={20} className="mr-2" />
                 Get Started
@@ -321,7 +321,7 @@ const Introduction: React.FC = () => {
                     boxShadow: "0 0 20px rgba(59, 130, 246, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.3)"
                   }}
                 >
-                  <div className="w-3 h-3 bg-white rounded-full opacity-80"></div>
+                  <div className="w-3 h-3  bg-white rounded-full opacity-80"></div>
                 </motion.div>
               </motion.div>
             </div>
@@ -357,10 +357,10 @@ const Introduction: React.FC = () => {
               >
                 {feature.icon}
               </motion.div>
-              <h3 className="text-xl font-semibold text-white mb-3">
+              <h3 className="text-2xl font-semibold text-white mb-3">
                 {feature.title}
               </h3>
-              <p className="text-gray-300 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed text-lg">
                 {feature.description}
               </p>
             </motion.div>
@@ -380,7 +380,7 @@ const Introduction: React.FC = () => {
               variants={slideInFromLeft}
               transition={{ delay: 0.2 }}
             >
-              <h2 className="text-3xl font-bold text-white mb-6">
+              <h2 className="text-4xl font-bold text-white mb-6">
                 Why Choose <span className="gradient-text">VocalAI</span>?
               </h2>
               <ul className="space-y-6">
@@ -411,7 +411,7 @@ const Introduction: React.FC = () => {
                     >
                       <Star className="text-yellow-300" size={20} />
                     </motion.div>
-                    <span className="text-gray-300 text-lg">
+                    <span className="text-gray-300 text-xl">
                       {text}
                     </span>
                   </motion.li>
@@ -499,7 +499,7 @@ const Introduction: React.FC = () => {
           <motion.h2
             variants={fadeInUp}
             transition={{ delay: 0.2 }}
-            className="text-3xl font-bold text-white mb-8"
+            className="text-4xl font-bold text-white mb-8"
           >
             Ready to Start Your <span className="gradient-text">Vocal Journey</span>?
           </motion.h2>
@@ -512,7 +512,7 @@ const Introduction: React.FC = () => {
             }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/auth')}
-            className="px-12 py-4 bg-gradient-primary text-white rounded-lg font-medium text-lg hover:shadow-2xl transition-all duration-300"
+            className="px-12 py-4 bg-gradient-primary text-white rounded-lg font-medium text-xl hover:shadow-2xl transition-all duration-300"
           >
             Begin Your Journey
           </motion.button>

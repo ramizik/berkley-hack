@@ -148,6 +148,23 @@ const Practice: React.FC = () => {
         exit={{ opacity: 0 }}
         className="page-transition max-w-7xl mx-auto"
       >
+        {/* Header with Description */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-2">Practice Session</h2>
+          <p className="text-gray-300 text-xl mb-4">Practice your vocals in real time with pitch feedback</p>
+          
+          {/* Description */}
+          <div className="text-gray-400 text-base leading-relaxed max-w-2xl">
+            <p className="mb-2">Record your voice, visualize your pitch accuracy, and track timing.</p>
+            <p className="mb-2">This is your daily workout zone to strengthen technique.</p>
+            <p>Every session is saved and analyzed by our AI.</p>
+          </div>
+        </motion.div>
+
         {/* Lyrics Request Section */}
         <LyricsRequest onLyricsGenerated={setCurrentLyrics} />
         <motion.div 
@@ -155,7 +172,6 @@ const Practice: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="card mb-8"
         >
-          <h2 className="text-2xl font-bold gradient-text mb-6">Practice Session</h2>
           {/* Display Current Lyrics if Available */}
           {currentLyrics && (
             <motion.div 
@@ -165,10 +181,10 @@ const Practice: React.FC = () => {
             >
               <div className="flex items-center mb-3">
                 <Music size={20} className="text-green-accent mr-2" />
-                <h3 className="font-semibold text-green-accent">Practice Lyrics</h3>
+                <h3 className="font-semibold text-green-accent text-lg">Practice Lyrics</h3>
               </div>
               <div className="bg-dark/50 rounded p-3 max-h-32 overflow-y-auto">
-                <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
+                <pre className="text-base text-gray-300 whitespace-pre-wrap font-mono">
                   {currentLyrics}
                 </pre>
               </div>
@@ -182,7 +198,7 @@ const Practice: React.FC = () => {
                 {error && (
                   <div className="mb-6 p-3 bg-red-accent/10 border border-red-accent/30 rounded-lg flex items-start max-w-md">
                     <AlertCircle size={16} className="text-red-accent mr-2 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-red-light">{error}</div>
+                    <div className="text-base text-red-light">{error}</div>
                   </div>
                 )}
 
@@ -205,13 +221,13 @@ const Practice: React.FC = () => {
                         ))}
                       </div>
                       
-                      {/* Current note display */}
+                      {/* Current note display - STATIC, NO ANIMATION */}
                       {currentNote && (
-                        <div className="mb-4">
-                          <div className="text-3xl font-bold text-purple-accent mb-1">
+                        <div className="mb-4 p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg">
+                          <div className="text-4xl md:text-5xl font-bold text-purple-accent mb-1">
                             {displayedNote || currentNote}
                           </div>
-                          <div className="text-sm text-gray-400">
+                          <div className="text-base text-gray-400">
                             {currentPitch} Hz
                           </div>
                         </div>
@@ -219,17 +235,17 @@ const Practice: React.FC = () => {
                       
                       {/* Recording timer */}
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-white mb-1">
+                        <div className="text-3xl font-bold text-white mb-1">
                           {formatTime(recordingDuration)}
                         </div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-base text-gray-400">
                           {formatTime(getTimeRemaining())} remaining
                         </div>
                       </div>
                       
                       {/* Notes sung display */}
                       {sungNotes.size > 0 && (
-                        <div className="mt-4 text-xs text-gray-500">
+                        <div className="mt-4 text-sm text-gray-500">
                           Notes: {Array.from(sungNotes).join(', ')}
                         </div>
                       )}
@@ -248,24 +264,22 @@ const Practice: React.FC = () => {
                         </svg>
                       </div>
                       
-                      <div className="text-green-400 font-medium mb-2">
+                      <div className="text-green-400 font-medium mb-2 text-lg">
                         <CheckCircle size={20} className="inline mr-2" />
                         Analysis Complete!
                       </div>
-                      <div className="text-sm text-gray-400">
+                      <div className="text-base text-gray-400">
                         Duration: {formatTime(recordingDuration)}
                       </div>
                     </div>
                   ) : (
                     <div className="text-center">
-                      <div className="text-gray-400 mb-4">
+                      <div className="text-gray-400 mb-4 text-lg">
                         {analysisComplete ? 'Analysis Complete!' : 'Press the microphone to start recording'}
                       </div>
-                      {!isRecording && !recordingComplete && (
-                        <div className="text-sm text-gray-500">
-                          Maximum recording time: 15 seconds
-                        </div>
-                      )}
+                      <div className="text-base text-gray-300 mb-4 max-w-md">
+                        Sing any song or a line that you would like during this practice session and our AI will analyze your performance. Groq will then provide you with personalized feedback and suggestions on how to improve your voice.
+                      </div>
                     </div>
                   )}
                 </div>
@@ -298,8 +312,8 @@ const Practice: React.FC = () => {
                   {isAnalyzing && (
                     <div className="text-center">
                       <div className="w-8 h-8 border-4 border-purple-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                      <div className="text-purple-light font-medium">Analyzing...</div>
-                      <div className="text-sm text-gray-400">Processing with AI</div>
+                      <div className="text-purple-light font-medium text-lg">Analyzing...</div>
+                      <div className="text-base text-gray-400">Processing with AI</div>
                     </div>
                   )}
                   
@@ -332,19 +346,19 @@ const Practice: React.FC = () => {
                     {saveStatus === 'saving' && (
                       <div className="flex items-center text-blue-accent">
                         <div className="w-4 h-4 border-2 border-blue-accent border-t-transparent rounded-full animate-spin mr-2"></div>
-                        <span className="text-sm">Saving session...</span>
+                        <span className="text-base">Saving session...</span>
                       </div>
                     )}
                     {saveStatus === 'saved' && (
                       <div className="flex items-center text-green-400">
                         <CheckCircle size={16} className="mr-2" />
-                        <span className="text-sm">Session saved successfully!</span>
+                        <span className="text-base">Session saved successfully!</span>
                       </div>
                     )}
                     {saveStatus === 'error' && (
                       <div className="flex items-center text-red-accent">
                         <AlertCircle size={16} className="mr-2" />
-                        <span className="text-sm">Failed to save: {saveError}</span>
+                        <span className="text-base">Failed to save: {saveError}</span>
                       </div>
                     )}
                   </div>
@@ -355,7 +369,7 @@ const Practice: React.FC = () => {
             {/* Analysis Results Panel */}
             <div>
               <div className="bg-gradient-to-br from-purple-accent/10 to-blue-accent/10 rounded-lg p-6 h-[400px] overflow-y-auto border border-purple-accent/20">
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-xl font-semibold text-white mb-4">
                   {analysisResult ? 'Voice Analysis Results' : 'Recording Tips'}
                 </h3>
                 
@@ -364,57 +378,57 @@ const Practice: React.FC = () => {
                     {/* Voice Metrics */}
                     <div className="grid grid-cols-1 gap-3">
                       <div className="bg-dark-lighter rounded-lg p-3">
-                        <div className="text-sm text-gray-300 mb-1">Mean Pitch</div>
-                        <div className="text-lg font-bold text-purple-accent">
+                        <div className="text-base text-gray-300 mb-1">Mean Pitch</div>
+                        <div className="text-xl font-bold text-purple-accent">
                           {analysisResult.mean_pitch ? `${analysisResult.mean_pitch} Hz` : 'N/A'}
                         </div>
                       </div>
                       
                       <div className="bg-dark-lighter rounded-lg p-3">
-                        <div className="text-sm text-gray-300 mb-1">Voice Type</div>
-                        <div className="text-lg font-bold text-purple-accent">
+                        <div className="text-base text-gray-300 mb-1">Voice Type</div>
+                        <div className="text-xl font-bold text-purple-accent">
                           {analysisResult.voice_type || 'Unknown'}
                         </div>
                       </div>
                       
                       <div className="bg-dark-lighter rounded-lg p-3">
-                        <div className="text-sm text-gray-300 mb-1">Vocal Range</div>
-                        <div className="text-lg font-bold text-purple-accent">
+                        <div className="text-base text-gray-300 mb-1">Vocal Range</div>
+                        <div className="text-xl font-bold text-purple-accent">
                           {analysisResult.lowest_note} - {analysisResult.highest_note}
                         </div>
                       </div>
                       
                       <div className="bg-dark-lighter rounded-lg p-3">
-                        <div className="text-sm text-gray-300 mb-1">Vibrato Rate</div>
-                        <div className="text-lg font-bold text-purple-accent">
+                        <div className="text-base text-gray-300 mb-1">Vibrato Rate</div>
+                        <div className="text-xl font-bold text-purple-accent">
                           {analysisResult.vibrato_rate ? `${analysisResult.vibrato_rate} Hz` : 'N/A'}
                         </div>
                       </div>
                       
                       <div className="bg-dark-lighter rounded-lg p-3">
-                        <div className="text-sm text-gray-300 mb-1">Dynamics</div>
-                        <div className="text-lg font-bold text-purple-accent">
+                        <div className="text-base text-gray-300 mb-1">Dynamics</div>
+                        <div className="text-xl font-bold text-purple-accent">
                           {analysisResult.dynamics || 'N/A'}
                         </div>
                       </div>
                       
                       <div className="bg-dark-lighter rounded-lg p-3">
-                        <div className="text-sm text-gray-300 mb-1">Jitter</div>
-                        <div className="text-lg font-bold text-purple-accent">
+                        <div className="text-base text-gray-300 mb-1">Jitter</div>
+                        <div className="text-xl font-bold text-purple-accent">
                           {analysisResult.jitter || 'N/A'}
                         </div>
                       </div>
                       
                       <div className="bg-dark-lighter rounded-lg p-3">
-                        <div className="text-sm text-gray-300 mb-1">Shimmer</div>
-                        <div className="text-lg font-bold text-purple-accent">
+                        <div className="text-base text-gray-300 mb-1">Shimmer</div>
+                        <div className="text-xl font-bold text-purple-accent">
                           {analysisResult.shimmer || 'N/A'}
                         </div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <ul className="text-sm text-gray-300 space-y-3">
+                  <ul className="text-base text-gray-300 space-y-3">
                     <li className="flex items-start">
                       <span className="w-5 h-5 bg-purple-accent/20 text-purple-light rounded-full flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
                         1
@@ -443,71 +457,11 @@ const Practice: React.FC = () => {
                       <span className="w-5 h-5 bg-purple-accent/20 text-purple-light rounded-full flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
                         5
                       </span>
-                      Maximum recording time is 15 seconds.
+                      Record for up to 15 seconds for best results.
                     </li>
                   </ul>
                 )}
               </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Real-time AI Coaching Panel */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="card mb-8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white flex items-center">
-              <Brain size={24} className="mr-2 text-pink-400" />
-              AI Practice Coach
-            </h3>
-            <button
-              onClick={() => setIsLettaOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors"
-            >
-              <MessageCircle size={18} />
-              Get Real-time Coaching
-            </button>
-          </div>
-          
-          <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg p-4">
-            <p className="text-gray-300 mb-3">
-              Your AI coach analyzes your practice in real-time and adapts to your vocal personality.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-gray-300">Live technique feedback</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span className="text-gray-300">Personalized exercises</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <span className="text-gray-300">Progress tracking</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-        
-        {/* Practice History */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4">Recent Practice Sessions</h3>
-          
-          <div className="bg-dark-lighter rounded-lg border border-dark-accent p-4">
-            <div className="text-center text-gray-400 py-8">
-              <Mic size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">No practice sessions yet</p>
-              <p className="text-sm">Complete your first practice session to see your progress here</p>
             </div>
           </div>
         </motion.div>
