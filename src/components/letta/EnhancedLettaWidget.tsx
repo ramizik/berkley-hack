@@ -130,15 +130,6 @@ const EnhancedLettaWidget: React.FC = () => {
             </h3>
             <p className="text-xs text-gray-400 mt-1">Powered by Letta</p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsLettaOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors"
-            >
-              <MessageCircle size={16} />
-              Chat with AI Coach
-            </button>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
