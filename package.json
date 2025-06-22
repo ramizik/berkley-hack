@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npx tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,6 +27,9 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
+  },
+  "overrides": {
+    "daily-js": "^0.67.0"
   },
   "type": "module"
 }
