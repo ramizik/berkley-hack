@@ -1,7 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
-import { Mic, Music, Star, Trophy, Heart, Play, ArrowRight } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Mic, Music, Volume2, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import ParticleBackground from '../components/animations/ParticleBackground';
