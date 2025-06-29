@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
-import { Mic, Music, Volume2, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, useInView } from 'framer-motion';
+import { Mic, Music, Star, Trophy, Heart, Play, ArrowRight } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import ParticleBackground from '../components/animations/ParticleBackground';
@@ -142,14 +144,16 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               
               {isRecording && (
                 <div className="absolute bottom-8 left-0 right-0 flex justify-center">
-                  <div className="flex space-x-1">
+                  {/* Fixed height container for sound bars */}
+                  <div className="flex space-x-1 h-10 items-end">
                     {[...Array(5)].map((_, i) => (
                       <div 
                         key={i} 
                         className="w-1 bg-purple-accent soundwave-bar" 
                         style={{ 
                           height: `${Math.random() * 40 + 10}px`,
-                          animationDelay: `${i * 0.1}s`
+                          animationDelay: `${i * 0.1}s`,
+                          maxHeight: '40px'
                         }}
                       ></div>
                     ))}

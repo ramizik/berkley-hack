@@ -377,12 +377,12 @@ const Practice: React.FC = () => {
                   </div>
                 )}
 
-                {/* Recording Visualization Area */}
-                <div className="w-full max-w-md mb-8">
+                {/* Recording Visualization Area - Fixed Height Container */}
+                <div className="w-full max-w-md mb-8 h-64 flex items-center justify-center">
                   {isRecording ? (
-                    <div className="text-center">
-                      {/* Sound bars visualization */}
-                      <div className="flex items-center justify-center space-x-1 mb-6">
+                    <div className="text-center w-full">
+                      {/* Sound bars visualization - Fixed height container */}
+                      <div className="flex items-center justify-center space-x-1 mb-6 h-16">
                         {[...Array(16)].map((_, i) => (
                           <div 
                             key={i} 
@@ -390,7 +390,8 @@ const Practice: React.FC = () => {
                             style={{ 
                               height: `${Math.random() * 60 + 10}px`,
                               animationDelay: `${i * 0.05}s`,
-                              animation: 'soundbar 0.5s infinite alternate'
+                              animation: 'soundbar 0.5s infinite alternate',
+                              maxHeight: '60px'
                             }}
                           ></div>
                         ))}
@@ -420,13 +421,14 @@ const Practice: React.FC = () => {
                       
                       {/* Notes sung display */}
                       {sungNotes.size > 0 && (
-                        <div className="mt-4 text-sm text-gray-500">
-                          Notes: {Array.from(sungNotes).join(', ')}
+                        <div className="mt-4 text-sm text-gray-500 truncate max-w-full">
+                          Notes: {Array.from(sungNotes).slice(0, 10).join(', ')}
+                          {sungNotes.size > 10 ? '...' : ''}
                         </div>
                       )}
                     </div>
                   ) : recordingComplete && analysisResult ? (
-                    <div className="text-center">
+                    <div className="text-center w-full">
                       {/* Waveform visualization */}
                       <div className="w-full h-24 mb-6">
                         <svg viewBox="0 0 400 100" className="w-full h-full">
