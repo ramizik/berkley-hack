@@ -365,24 +365,6 @@ const Practice: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="card mb-8"
         >
-          {/* Display Current Lyrics if Available */}
-          {currentLyrics && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 bg-gradient-to-r from-green-accent/10 to-blue-accent/10 border border-green-accent/30 rounded-lg p-4"
-            >
-              <div className="flex items-center mb-3">
-                <Music size={20} className="text-green-accent mr-2" />
-                <h3 className="font-semibold text-green-accent text-lg">Practice Lyrics</h3>
-              </div>
-              <div className="bg-dark/50 rounded p-3 max-h-32 overflow-y-auto">
-                <pre className="text-base text-gray-300 whitespace-pre-wrap font-mono">
-                  {currentLyrics}
-                </pre>
-              </div>
-            </motion.div>
-          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <div className="flex flex-col items-center justify-center bg-gradient-to-br from-purple-accent/10 to-blue-accent/10 rounded-lg p-8 min-h-[400px] border border-purple-accent/20">
