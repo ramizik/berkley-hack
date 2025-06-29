@@ -696,24 +696,6 @@ const Practice: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Practice History */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4">Recent Practice Sessions</h3>
-          
-          <div className="bg-dark-lighter rounded-lg border border-dark-accent p-4">
-            <div className="text-center text-gray-400 py-8">
-              <Mic size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">No practice sessions yet</p>
-              <p className="text-sm">Complete your first practice session to see your progress here</p>
-            </div>
-          </div>
-        </motion.div>
-
         <LettaChat
           isOpen={isLettaOpen}
           onClose={() => setIsLettaOpen(false)}
