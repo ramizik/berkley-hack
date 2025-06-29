@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mic, Music, Volume2, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import ParticleBackground from '../components/animations/ParticleBackground';
 import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
+import LyricsRequest from '../components/practice/LyricsRequest';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -16,6 +17,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const { user } = useAuth();
   const [step, setStep] = React.useState(1);
   const totalSteps = 3;
+  const [currentLyrics, setCurrentLyrics] = useState<string>('');
 
   // Use the custom hook for all voice analysis logic
   const {
@@ -100,13 +102,25 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         return (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-2 text-white">Record Your Voice</h2>
-            <p className="text-gray-300 mb-8 max-w-md mx-auto">
+            <p className="text-gray-300 mb-4 max-w-md mx-auto">
               We need to analyze your voice to determine your vocal characteristics. Please sing a few notes, scales, or hum a melody.
             </p>
             
+            {/* Lyrics Generator */}
+            <div className="mb-6 max-w-md mx-auto">
+              <LyricsRequest onLyricsGenerated={setCurrentLyrics} />
+              
+              {currentLyrics && (
+                <div className="mt-4 p-4 bg-dark-lighter rounded-lg border border-purple-accent/20">
+                  <h3 className="text-lg font-semibold text-white mb-2">Practice Lyrics</h3>
+                  <p className="text-gray-300 whitespace-pre-wrap">{currentLyrics}</p>
+                </div>
+              )}
+            </div>
+            
             {error && (
-              <div className="mb-6 p-4 bg-red-accent/10 border border-red-accent/30 rounded-lg flex items-start max-w-md mx-auto">
-                <AlertCircle size={20} className="text-red-accent mr-3 flex-shrink-0 mt-0.5" />
+              <div className="mb-6 p-3 bg-red-accent/10 border border-red-accent/30 rounded-lg flex items-start max-w-md mx-auto">
+                <AlertCircle size={16} className="text-red-accent mr-2 flex-shrink-0 mt-0.5" />
                 <div className="text-left">
                   <p className="text-red-light text-sm">{error}</p>
                   <button
