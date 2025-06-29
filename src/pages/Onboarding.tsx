@@ -109,13 +109,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {/* Lyrics Generator - Wider container */}
             <div className="mb-6 max-w-2xl mx-auto">
               <LyricsRequest onLyricsGenerated={setCurrentLyrics} />
-              
-              {currentLyrics && (
-                <div className="mt-4 p-4 bg-dark-lighter rounded-lg border border-purple-accent/20">
-                  <h3 className="text-lg font-semibold text-white mb-2">Practice Lyrics</h3>
-                  <p className="text-gray-300 whitespace-pre-wrap">{currentLyrics}</p>
-                </div>
-              )}
             </div>
             
             {error && (
