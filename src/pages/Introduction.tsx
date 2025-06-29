@@ -96,7 +96,25 @@ const Introduction: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Custom Bolt.new Badge Configuration */}
+      <style>
+        {`
+          .bolt-badge {
+            transition: all 0.3s ease;
+          }
+        `}
+      </style>
+      <div className="fixed top-4 right-4 z-50">
+        <a href="https://bolt.new/?rid=q2wnel" target="_blank" rel="noopener noreferrer" 
+           className="block transition-all duration-300 hover:shadow-2xl">
+          <img src="https://github.com/kickiniteasy/bolt-hackathon-badge/blob/main/src/public/bolt-badge/white_circle_360x360/white_circle_360x360.png" 
+               alt="Built with Bolt.new badge" 
+               className="w-20 h-20 md:w-28 md:h-28 rounded-full shadow-lg"
+                />
+        </a>
+      </div>
+
       {/* Subtle Red and Blue gradient accents */}
       <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-gradient-to-br from-red-500/15 to-transparent rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-gradient-to-tl from-blue-500/15 to-transparent rounded-full blur-3xl"></div>
