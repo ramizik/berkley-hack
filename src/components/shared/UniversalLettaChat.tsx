@@ -89,6 +89,18 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
     }
   }, [isOpen, user?.id, conversationStarted]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
+
   const resetChat = () => {
     setMessages([]);
     setInput('');
@@ -249,6 +261,8 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={onClose}
+          onWheel={(e) => e.preventDefault()}
+          style={{ overscrollBehavior: 'contain' }}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -275,7 +289,29 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
             </div>
             
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div 
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+              style={{ overscrollBehavior: 'contain' }}
+              onWheel={(e) => {
+                const target = e.currentTarget;
+                const atTop = target.scrollTop === 0;
+                const atBottom = target.scrollTop >= target.scrollHeight - target.clientHeight;
+                
+                if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+                  e.preventDefault();
+                }
+              }}
+              onTouchMove={(e) => {
+                const target = e.currentTarget;
+                const atTop = target.scrollTop === 0;
+                const atBottom = target.scrollTop >= target.scrollHeight - target.clientHeight;
+                
+                // For touch events, we need to check the touch direction
+                if (atTop || atBottom) {
+                  e.stopPropagation();
+                }
+              }}
+            >
               {messages.map((msg, index) => (
                 <div key={index} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                   {msg.role === 'assistant' && (

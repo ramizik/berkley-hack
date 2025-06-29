@@ -23,23 +23,23 @@ const LyricsRequest: React.FC<LyricsRequestProps> = ({ onLyricsGenerated }) => {
 
   const genres = [
     'Pop', 'Rock', 'Jazz', 'Classical', 'Country', 'R&B', 
-    'Folk', 'Blues', 'Electronic', 'Hip Hop', 'Musical Theater'
+    'Folk', 'Blues', 'Musical Theater', 'Gospel', 'Indie'
   ];
 
   const moods = [
     'Happy', 'Melancholic', 'Energetic', 'Calm', 'Passionate', 
-    'Nostalgic', 'Uplifting', 'Mysterious', 'Romantic', 'Empowering'
+    'Nostalgic', 'Uplifting', 'Romantic', 'Empowering', 'Smooth'
   ];
 
   const themes = [
-    'Love', 'Friendship', 'Nature', 'Adventure', 'Self-discovery',
-    'Overcoming challenges', 'Celebration', 'Reflection', 'Hope', 'Freedom'
+    'Vocal Exercise', 'Love', 'Friendship', 'Nature', 'Adventure', 'Self-discovery',
+    'Overcoming challenges', 'Celebration', 'Hope', 'Freedom', 'Practice Scales'
   ];
 
   const difficulties = [
-    { value: 'beginner', label: 'Beginner', description: 'Simple melodies, basic rhythms' },
-    { value: 'intermediate', label: 'Intermediate', description: 'Moderate complexity, some range' },
-    { value: 'advanced', label: 'Advanced', description: 'Complex melodies, wide range' }
+    { value: 'beginner', label: 'Beginner', description: 'Simple melodies, limited range (1 octave), clear pronunciation focus' },
+    { value: 'intermediate', label: 'Intermediate', description: 'Moderate range (1.5 octaves), some vocal runs, breath control' },
+    { value: 'advanced', label: 'Advanced', description: 'Wide range (2+ octaves), complex rhythms, advanced techniques' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,34 +95,158 @@ const LyricsRequest: React.FC<LyricsRequestProps> = ({ onLyricsGenerated }) => {
   const generateMockLyrics = (data: typeof formData): string => {
     const { genre, mood, theme, difficulty } = data;
     
-    // Generate 15-second lyrics based on the parameters
-    const lyricsTemplates = {
+    // Public domain and original practice lyrics designed for vocal training
+    const publicDomainSongs = {
+      classical: [
+        `[Amazing Grace - Public Domain]
+Amazing grace, how sweet the sound
+That saved a wretch like me
+I once was lost, but now am found
+Was blind, but now I see`,
+
+        `[Swing Low, Sweet Chariot - Public Domain]  
+Swing low, sweet chariot
+Coming for to carry me home
+Swing low, sweet chariot
+Coming for to carry me home`
+      ],
+      folk: [
+        `[She'll Be Coming 'Round the Mountain - Public Domain]
+She'll be coming 'round the mountain when she comes
+She'll be coming 'round the mountain when she comes
+She'll be coming 'round the mountain
+She'll be coming 'round the mountain
+She'll be coming 'round the mountain when she comes`,
+
+        `[Home on the Range - Public Domain]
+Home, home on the range
+Where the deer and the antelope play
+Where seldom is heard a discouraging word
+And the skies are not cloudy all day`
+      ]
+    };
+
+    const originalPracticeLyrics = {
       pop: {
-        happy: `[Verse - 15 seconds]
-In the morning light, I feel so alive
-Every step I take, I'm ready to thrive
-With a heart so full and dreams so bright
-I'm reaching for the stars tonight`,
-        
-        melancholic: `[Verse - 15 seconds]
-In the quiet hours of the night
-I think about the things that might
-Have been different, have been true
-If I'd only known what to do`
+        happy: `[Original Practice Song - Upbeat Pop Style]
+🎵 Vocal Range: C4-G4 | BPM: 120 | Key: C Major
+
+[Verse - Clear pronunciation practice]
+Walking through the city lights tonight (tonight)
+Everything is shining oh so bright (so bright)  
+Feel the rhythm in my heart so strong
+This is where I know that I belong
+
+[Practice Notes: Focus on clear consonants and smooth vowel transitions]`,
+
+        melancholic: `[Original Practice Song - Ballad Style]
+🎵 Vocal Range: A3-F4 | BPM: 70 | Key: A Minor
+
+[Verse - Breath control practice]
+Gentle raindrops on my window pane
+Tell a story of both joy and pain
+Every breath I take reminds me how
+To live each moment in the here and now
+
+[Practice Notes: Focus on sustained notes and emotional expression]`,
+
+        energetic: `[Original Practice Song - Energetic Style]
+🎵 Vocal Range: D4-A4 | BPM: 140 | Key: D Major
+
+[Verse - Articulation practice]
+Rise up, stand tall, let your voice be heard
+Every single note, every single word
+Power from within, let it shine so bright
+You were born to sing, born to reach new heights
+
+[Practice Notes: Strong consonants, powerful chest voice]`
       },
+
       rock: {
-        energetic: `[Verse - 15 seconds]
-I can feel the fire burning deep inside
-Breaking through the walls, I'm ready to ride
-No more holding back, no more fear
-I'm breaking free, the time is here`
+        energetic: `[Original Practice Song - Rock Style]
+🎵 Vocal Range: E3-B4 | BPM: 130 | Key: E Minor
+
+[Verse - Power and control]
+Thunder in my veins, lightning in my soul
+Nothing's gonna stop me from reaching my goal
+Scream it to the world, let them hear you roar
+This is what we came here fighting for
+
+[Practice Notes: Mix voice technique, strong belt tones]`,
+
+        passionate: `[Original Practice Song - Rock Ballad]
+🎵 Vocal Range: C3-G4 | BPM: 80 | Key: C Major
+
+[Verse - Dynamic control]
+In the silence of the night I call your name
+Through the darkness, through the cold, through the rain
+Every heartbeat tells me what I need to know
+Some things in this life you never let go
+
+[Practice Notes: Soft to powerful dynamics, vibrato control]`
+      },
+
+      jazz: {
+        smooth: `[Original Practice Song - Jazz Standard Style]
+🎵 Vocal Range: Bb3-F4 | BPM: 90 | Key: Bb Major
+
+[Verse - Smooth phrasing]
+Moonlight dancing on the water's edge
+Making promises that we both pledge
+Time moves slowly when you're by my side
+In this moment, let our hearts collide
+
+[Practice Notes: Smooth legato, subtle runs, jazz phrasing]`,
+
+        swing: `[Original Practice Song - Swing Style]
+🎵 Vocal Range: C4-Ab4 | BPM: 120 | Key: F Major
+
+[Verse - Rhythmic precision]
+Swing it high, swing it low, feel that beat
+Move your body to the rhythm so sweet
+Jazz is calling and we answer the call
+Music lifts us up when we're ready to fall
+
+[Practice Notes: Syncopated rhythm, clear diction, swing feel]`
       }
     };
+
+    // Select appropriate lyrics based on user preferences
+    if (genre.toLowerCase() === 'classical' || genre.toLowerCase() === 'folk') {
+      const publicDomain = publicDomainSongs[genre.toLowerCase() as keyof typeof publicDomainSongs];
+      if (publicDomain) {
+        return publicDomain[Math.floor(Math.random() * publicDomain.length)];
+      }
+    }
+
+    // Use original practice lyrics
+    const genreKey = genre.toLowerCase() as keyof typeof originalPracticeLyrics;
+    const moodKey = mood.toLowerCase() as keyof typeof originalPracticeLyrics.pop;
     
-    const template = lyricsTemplates.pop?.[mood.toLowerCase() as keyof typeof lyricsTemplates.pop] || 
-      lyricsTemplates.pop.happy;
+    let selectedLyrics;
     
-    return template;
+    if (originalPracticeLyrics[genreKey]) {
+      const genreLyrics = originalPracticeLyrics[genreKey];
+      if (genreLyrics[moodKey]) {
+        selectedLyrics = genreLyrics[moodKey];
+      } else {
+        // Get first available mood for this genre
+        const availableMoods = Object.keys(genreLyrics);
+        selectedLyrics = genreLyrics[availableMoods[0] as keyof typeof genreLyrics];
+      }
+    } else {
+      // Default to pop if genre not found
+      selectedLyrics = originalPracticeLyrics.pop[moodKey] || originalPracticeLyrics.pop.happy;
+    }
+
+    // Add difficulty-specific notes
+    const difficultyNotes = {
+      beginner: "\n\n💡 Beginner Tip: Focus on clear pronunciation and steady breathing. Don't worry about perfection!",
+      intermediate: "\n\n💡 Intermediate Tip: Work on smooth transitions between notes and consistent tone quality.",
+      advanced: "\n\n💡 Advanced Tip: Focus on technical precision, dynamics, and emotional expression."
+    };
+
+    return selectedLyrics + (difficultyNotes[difficulty as keyof typeof difficultyNotes] || difficultyNotes.beginner);
   };
 
   const copyToClipboard = async () => {
@@ -150,8 +274,8 @@ I'm breaking free, the time is here`
               <Music size={20} className="text-white" />
             </div>
             <div className="text-left">
-              <h3 className="font-semibold text-white">Find a song for a practice based on your current mood powered by Groq</h3>
-              <p className="text-sm text-gray-300">Get 15-second lyrics for your practice session</p>
+              <h3 className="font-semibold text-white">AI-Generated Practice Lyrics Powered by Groq</h3>
+              <p className="text-sm text-gray-300">Dynamic, personalized songs that feel like real music - generated fresh every time</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -171,6 +295,50 @@ I'm breaking free, the time is here`
         >
           {!generatedLyrics ? (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Info Note */}
+              <div className="bg-blue-accent/10 border border-blue-accent/30 rounded-lg p-4">
+                <div className="flex items-start space-x-2">
+                  <Sparkles size={16} className="text-blue-accent mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-100">
+                    <p className="font-medium mb-1">🤖 Powered by Groq AI</p>
+                    <p>Advanced AI generates unique, high-quality practice lyrics that feel like real songs you'd want to sing. Each generation is completely original and tailored to your preferences and skill level.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Presets */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Quick Practice Options
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, genre: 'Pop', mood: 'Happy', theme: 'Vocal Exercise', difficulty: 'beginner'})}
+                    className="p-3 bg-purple-accent/20 border border-purple-accent/30 rounded-lg text-sm text-purple-100 hover:bg-purple-accent/30 transition-colors text-left"
+                  >
+                    <div className="font-medium">Beginner Pop</div>
+                    <div className="text-xs text-purple-300">Easy melodies, clear pronunciation</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, genre: 'Jazz', mood: 'Smooth', theme: 'Vocal Exercise', difficulty: 'intermediate'})}
+                    className="p-3 bg-blue-accent/20 border border-blue-accent/30 rounded-lg text-sm text-blue-100 hover:bg-blue-accent/30 transition-colors text-left"
+                  >
+                    <div className="font-medium">Jazz Standards</div>
+                    <div className="text-xs text-blue-300">Smooth phrasing, legato practice</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, genre: 'Classical', mood: 'Calm', theme: 'Practice Scales', difficulty: 'advanced'})}
+                    className="p-3 bg-green-accent/20 border border-green-accent/30 rounded-lg text-sm text-green-100 hover:bg-green-accent/30 transition-colors text-left"
+                  >
+                    <div className="font-medium">Classical Training</div>
+                    <div className="text-xs text-green-300">Public domain classics, technique focus</div>
+                  </button>
+                </div>
+              </div>
+
               {/* Error Display */}
               {error && (
                 <motion.div
@@ -179,7 +347,7 @@ I'm breaking free, the time is here`
                   className="bg-red-500/20 border border-red-500/30 rounded-lg p-3"
                 >
                   <p className="text-red-400 text-sm">
-                    {error} (Using fallback lyrics)
+                    {error} (Using practice lyrics)
                   </p>
                 </motion.div>
               )}

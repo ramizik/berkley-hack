@@ -471,7 +471,7 @@ const Practice: React.FC = () => {
                         {analysisComplete ? 'Analysis Complete!' : 'Press the microphone to start recording'}
                       </div>
                       <div className="text-base text-gray-300 mb-4 max-w-md">
-                        Sing any song or a line that you would like during this practice session and our AI will analyze your performance. Groq will then provide you with personalized feedback and suggestions on how to improve your voice.
+                        Sing any song or line during this practice session and our advanced voice analysis will process your performance. Groq AI will then generate personalized feedback and expert coaching suggestions to help improve your voice.
                       </div>
                     </div>
                   )}

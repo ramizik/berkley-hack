@@ -679,56 +679,194 @@ async def _generate_lyrics_with_groq(genre: str, mood: str, theme: str, difficul
         return _generate_fallback_lyrics(genre, mood, theme, difficulty, custom_request)
     
     try:
-        # Create a detailed prompt for Groq
-        prompt = f"""You are a professional songwriter. Create a 15-second verse (approximately 4 lines) for a {genre} song with the following specifications:
+        # Create an enhanced prompt for Groq to generate high-quality, readable lyrics
+        difficulty_instructions = {
+            'beginner': {
+                'vocabulary': 'Use simple, everyday words that are easy to pronounce and understand',
+                'rhyme_scheme': 'Use clear ABAB or AABB rhyme schemes',
+                'vocal_range': 'Keep melodies simple with limited range (1 octave)',
+                'rhythm': 'Use straightforward 4/4 time with clear, predictable rhythm patterns'
+            },
+            'intermediate': {
+                'vocabulary': 'Use moderate vocabulary with some expressive language',
+                'rhyme_scheme': 'Vary between ABAB, ABCB, or internal rhymes',
+                'vocal_range': 'Moderate range (1.5 octaves) with some leaps',
+                'rhythm': 'Include syncopation and varied rhythm patterns'
+            },
+            'advanced': {
+                'vocabulary': 'Use rich, poetic language with metaphors and imagery',
+                'rhyme_scheme': 'Complex rhyme schemes including slant rhymes and internal rhymes',
+                'vocal_range': 'Wide range (2+ octaves) with challenging intervals',
+                'rhythm': 'Complex rhythms, time signature changes, and sophisticated phrasing'
+            }
+        }
 
-Genre: {genre}
+        genre_styles = {
+            'pop': 'catchy hooks, relatable themes, modern language, radio-friendly feel',
+            'rock': 'powerful lyrics, driving energy, strong emotions, rebellious spirit',
+            'jazz': 'sophisticated wordplay, smooth phrasing, romantic themes, classic elegance',
+            'classical': 'formal language, timeless themes, elevated vocabulary, artistic expression',
+            'country': 'storytelling approach, down-to-earth language, relatable scenarios',
+            'r&b': 'soulful expression, emotional depth, smooth flow, personal connection',
+            'folk': 'narrative style, simple wisdom, acoustic feel, authentic voice',
+            'blues': 'emotional honesty, life experiences, call-and-response style',
+            'gospel': 'uplifting message, spiritual themes, communal feeling, hope and faith',
+            'musical theater': 'character-driven, dramatic expression, clear storytelling, theatrical flair'
+        }
+
+        current_difficulty = difficulty_instructions.get(difficulty, difficulty_instructions['beginner'])
+        current_genre_style = genre_styles.get(genre.lower(), genre_styles['pop'])
+
+        prompt = f"""You are a master songwriter who creates original practice material for vocal students. Create lyrics that feel familiar and enjoyable to sing, inspired by the best qualities of {genre} music, while being completely original.
+
+SONG SPECIFICATIONS:
+Genre: {genre} ({current_genre_style})
 Mood: {mood}
 Theme: {theme}
-Difficulty Level: {difficulty}
+Difficulty: {difficulty}
+Additional Request: {custom_request or 'None'}
 
-Additional Requirements: {custom_request or 'None'}
+DIFFICULTY-SPECIFIC REQUIREMENTS:
+- Vocabulary: {current_difficulty['vocabulary']}
+- Rhyme Scheme: {current_difficulty['rhyme_scheme']}
+- Vocal Range: {current_difficulty['vocal_range']}
+- Rhythm: {current_difficulty['rhythm']}
 
-Guidelines:
-- Create exactly 4 lines that can be sung in about 15 seconds
-- Match the emotional tone of the mood
-- Use language appropriate for the difficulty level:
-  * Beginner: Simple words, basic rhyming patterns
-  * Intermediate: Moderate vocabulary, varied rhythm
-  * Advanced: Rich vocabulary, complex metaphors
-- Include the format: [Verse - 15 seconds] at the beginning
-- Make it inspiring and suitable for vocal practice
-- Ensure the lyrics flow naturally and are singable
+CONTENT GUIDELINES:
+- Create exactly 4 lines for a 15-second practice segment
+- Write lyrics that are easy to read, understand, and remember
+- Use clear, natural word flow that feels comfortable to sing
+- Include vocal-friendly consonants and smooth vowel transitions
+- Make the content inspiring and motivational for practice
+- Ensure the lyrics have a natural, conversational quality
+- Use universally relatable themes and emotions
+- Include practice notes for vocal technique
 
-Please provide only the lyrics without any additional commentary or formatting."""
+FORMAT REQUIREMENTS:
+Start with: [Original Practice Song - {genre} Style]
+Add technical info: 🎵 Vocal Range: [range] | BPM: [tempo] | Key: [key]
+Include the 4-line verse
+End with: [Practice Notes: specific technique focus for this song]
 
-        # Call Groq API
+EXAMPLE QUALITY LEVEL:
+Make it feel like lyrics people would want to sing along to - memorable, meaningful, and musically satisfying while being completely original and educational.
+
+Generate lyrics that capture the essence and appeal of great {genre} songs while being perfect for vocal practice and development."""
+
+        # Call Groq API with optimized parameters for high-quality lyrics
         response = groq_client.chat.completions.create(
             model="llama3-8b-8192",  # Using Llama3 model for better creative output
             messages=[
+                {
+                    "role": "system",
+                    "content": "You are a professional songwriter and vocal coach who creates engaging, original practice material that feels like real songs people love to sing. Focus on creating lyrics that are memorable, easy to understand, and technically appropriate for vocal development."
+                },
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
-            temperature=0.8,  # Higher temperature for more creative output
-            max_tokens=200,
-            top_p=0.9
+            temperature=0.85,  # Optimized for creative but coherent output
+            max_tokens=350,    # Increased for more detailed response
+            top_p=0.9,
+            frequency_penalty=0.2,  # Reduce repetition
+            presence_penalty=0.1    # Encourage variety
         )
         
         lyrics = response.choices[0].message.content.strip()
         
-        # Clean up the response
-        if lyrics.startswith("[Verse"):
-            return lyrics
-        else:
-            # Add format if not present
-            return f"[Verse - 15 seconds]\n{lyrics}"
+        # Enhanced response processing and validation
+        lyrics = _process_groq_lyrics_response(lyrics, genre, difficulty)
+        return lyrics
             
     except Exception as e:
         logger.error(f"Groq API error: {str(e)}")
         logger.warning("Falling back to mock lyrics generation")
         return _generate_fallback_lyrics(genre, mood, theme, difficulty, custom_request)
+
+def _process_groq_lyrics_response(lyrics: str, genre: str, difficulty: str) -> str:
+    """
+    Process and enhance Groq-generated lyrics response
+    """
+    # Remove any unwanted formatting or extra text
+    lyrics = lyrics.strip()
+    
+    # If it doesn't start with the expected format, try to find the actual lyrics content
+    if not lyrics.startswith("[Original Practice Song"):
+        # Look for common patterns and extract the main content
+        lines = lyrics.split('\n')
+        processed_lines = []
+        
+        # Add proper header if missing
+        processed_lines.append(f"[Original Practice Song - {genre} Style]")
+        
+        # Add technical info if missing
+        if not any("🎵" in line for line in lines):
+            # Add appropriate technical details based on genre and difficulty
+            if difficulty == 'beginner':
+                processed_lines.append("🎵 Vocal Range: C4-G4 | BPM: 100-120 | Key: C Major")
+            elif difficulty == 'intermediate':
+                processed_lines.append("🎵 Vocal Range: A3-A4 | BPM: 110-140 | Key: Variable")
+            else:  # advanced
+                processed_lines.append("🎵 Vocal Range: G3-C5 | BPM: 80-160 | Key: Variable")
+            processed_lines.append("")
+        
+        # Find and clean the actual lyric lines
+        verse_started = False
+        lyric_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            
+            # Skip empty lines and headers
+            if not line or line.startswith('[') or line.startswith('🎵'):
+                if line.startswith('🎵'):
+                    processed_lines.append(line)
+                    processed_lines.append("")
+                continue
+                
+            # Skip instruction text
+            if any(skip_phrase in line.lower() for skip_phrase in ['verse', 'chorus', 'bridge', 'here are', 'here is', 'the lyrics', 'practice notes']):
+                if 'practice notes' in line.lower():
+                    processed_lines.append("")
+                    processed_lines.append(f"[{line}]")
+                continue
+            
+            # This looks like actual lyric content
+            if line and not line.startswith('[') and len(lyric_lines) < 4:
+                lyric_lines.append(line)
+        
+        # Add the verse header if we have lyrics
+        if lyric_lines:
+            processed_lines.append("[Verse - Clear pronunciation practice]")
+            processed_lines.extend(lyric_lines)
+        
+        # Add practice notes if missing
+        if not any("Practice Notes" in line for line in processed_lines):
+            processed_lines.append("")
+            
+            # Add appropriate practice notes based on genre and difficulty
+            if genre.lower() == 'pop':
+                if difficulty == 'beginner':
+                    processed_lines.append("[Practice Notes: Focus on clear consonants and steady rhythm]")
+                elif difficulty == 'intermediate':
+                    processed_lines.append("[Practice Notes: Work on smooth vocal runs and dynamic expression]")
+                else:
+                    processed_lines.append("[Practice Notes: Master complex rhythms and advanced vocal techniques]")
+            elif genre.lower() == 'jazz':
+                processed_lines.append("[Practice Notes: Focus on smooth legato phrasing and jazz articulation]")
+            elif genre.lower() == 'rock':
+                processed_lines.append("[Practice Notes: Develop strong belt voice and powerful projection]")
+            else:
+                processed_lines.append("[Practice Notes: Focus on technique appropriate for this genre]")
+        
+        lyrics = '\n'.join(processed_lines)
+    
+    # Final cleanup
+    lyrics = lyrics.replace('\n\n\n', '\n\n')  # Remove excessive line breaks
+    lyrics = lyrics.strip()
+    
+    return lyrics
 
 def _generate_fallback_lyrics(genre: str, mood: str, theme: str, difficulty: str, custom_request: Optional[str] = None) -> str:
     """
@@ -886,79 +1024,126 @@ async def _generate_groq_vocal_feedback(
             except json.JSONDecodeError:
                 logger.warning("Invalid vocal profile JSON, using empty profile")
         
-        # Create comprehensive prompt for Groq
-        prompt = f"""
-        As an expert vocal coach with 20+ years of experience, analyze this singing performance and provide comprehensive, actionable feedback.
+        # Create enhanced, comprehensive prompt for Groq vocal feedback
+        # Analyze voice type and provide context
+        voice_type = voice_analysis.get('voice_type', 'unknown')
+        mean_pitch = voice_analysis.get('mean_pitch', 0)
+        jitter = voice_analysis.get('jitter', 0)
+        shimmer = voice_analysis.get('shimmer', 0)
+        vibrato_rate = voice_analysis.get('vibrato_rate', 0)
+        
+        # Voice quality assessment context
+        pitch_context = ""
+        if mean_pitch > 0:
+            if mean_pitch < 150:
+                pitch_context = "lower vocal range - focus on breath support and resonance"
+            elif mean_pitch > 300:
+                pitch_context = "higher vocal range - focus on maintaining clarity and avoiding strain"
+            else:
+                pitch_context = "mid-range vocals - good for developing overall technique"
+        
+        quality_context = ""
+        if jitter > 0 and shimmer > 0:
+            if jitter < 0.02 and shimmer < 0.03:
+                quality_context = "excellent voice stability and tone quality"
+            elif jitter < 0.05 and shimmer < 0.06:
+                quality_context = "good voice quality with room for refinement"
+            else:
+                quality_context = "voice quality needs focused improvement"
 
-        VOCAL ANALYSIS DATA:
-        - Mean Pitch: {voice_analysis.get('mean_pitch', 0)} Hz
-        - Voice Type: {voice_analysis.get('voice_type', 'unknown')}
-        - Vibrato Rate: {voice_analysis.get('vibrato_rate', 0)} Hz
-        - Jitter: {voice_analysis.get('jitter', 0)}
-        - Shimmer: {voice_analysis.get('shimmer', 0)}
-        - Dynamics: {voice_analysis.get('dynamics', 'stable')}
-        - Vocal Range: {voice_analysis.get('lowest_note', 'C3')} - {voice_analysis.get('highest_note', 'C5')}
+        prompt = f"""You are a world-class vocal coach and performance expert. Analyze this vocal performance with the precision of a conservatory instructor and the encouragement of a supportive mentor.
 
-        TARGET SONG: {target_song or 'General vocal practice'}
-        PRACTICE SESSION: #{practice_session}
-        USER PROFILE: {json.dumps(vocal_profile, indent=2)}
+DETAILED VOCAL ANALYSIS:
+📊 Technical Metrics:
+- Mean Pitch: {mean_pitch} Hz ({pitch_context})
+- Voice Classification: {voice_type}
+- Vibrato Rate: {vibrato_rate} Hz
+- Voice Stability (Jitter): {jitter} ({quality_context})
+- Tone Consistency (Shimmer): {shimmer}
+- Dynamic Control: {voice_analysis.get('dynamics', 'stable')}
+- Vocal Range: {voice_analysis.get('lowest_note', 'C3')} - {voice_analysis.get('highest_note', 'C5')}
 
-        Please provide detailed feedback in the following JSON format:
+🎵 Session Context:
+- Target Material: {target_song or 'General vocal practice session'}
+- Practice Session #: {practice_session}
+- User Experience Level: {vocal_profile.get('experience_level', 'Not specified')}
+- Previous Sessions: {vocal_profile.get('total_sessions', 'First session')}
 
-        {{
-            "overall_assessment": {{
-                "score": 1-10,
-                "strengths": ["list of strengths"],
-                "areas_for_improvement": ["list of areas to work on"],
-                "confidence_level": "low/medium/high"
-            }},
-            "technical_feedback": {{
-                "pitch_accuracy": {{
-                    "assessment": "detailed assessment",
-                    "specific_issues": ["list of issues"],
-                    "exercises": ["specific exercises to improve"]
-                }},
-                "breath_control": {{
-                    "assessment": "detailed assessment",
-                    "specific_issues": ["list of issues"],
-                    "exercises": ["specific exercises to improve"]
-                }},
-                "vocal_technique": {{
-                    "assessment": "detailed assessment",
-                    "specific_issues": ["list of issues"],
-                    "exercises": ["specific exercises to improve"]
-                }}
-            }},
-            "emotional_expression": {{
-                "assessment": "how well emotion was conveyed",
-                "suggestions": ["ways to improve emotional expression"],
-                "performance_tips": ["tips for better performance"]
-            }},
-            "practice_recommendations": {{
-                "immediate_focus": "what to work on in next 10 minutes",
-                "daily_exercises": ["exercises for daily practice"],
-                "weekly_goals": ["goals for the week"],
-                "long_term_development": "long-term improvement plan"
-            }},
-            "motivational_message": "encouraging message for the singer",
-            "next_session_prep": "what to prepare for the next practice session"
+🎯 Coaching Goals:
+Provide feedback that is:
+1. Technically accurate and specific
+2. Immediately actionable with clear next steps
+3. Encouraging and motivational
+4. Progressive (building on previous sessions)
+5. Tailored to the user's voice type and skill level
+
+Generate detailed feedback in this exact JSON structure:
+
+{{
+    "overall_assessment": {{
+        "score": [1-10 integer score],
+        "strengths": ["2-3 specific vocal strengths observed"],
+        "areas_for_improvement": ["2-3 priority areas to focus on"],
+        "confidence_level": "low/medium/high",
+        "session_progress": "how this session compares to typical development"
+    }},
+    "technical_feedback": {{
+        "pitch_accuracy": {{
+            "assessment": "specific analysis of pitch control and accuracy",
+            "specific_issues": ["detailed list of pitch-related issues if any"],
+            "exercises": ["3 specific exercises to improve pitch accuracy"]
+        }},
+        "breath_control": {{
+            "assessment": "detailed breath support and control analysis",
+            "specific_issues": ["breathing technique issues observed"],
+            "exercises": ["3 breath control exercises with clear instructions"]
+        }},
+        "vocal_technique": {{
+            "assessment": "overall technique evaluation for this voice type",
+            "specific_issues": ["technique problems to address"],
+            "exercises": ["3 technique exercises tailored to their voice type"]
+        }},
+        "tone_quality": {{
+            "assessment": "analysis of tone production and resonance",
+            "specific_issues": ["tone-related areas for improvement"],
+            "exercises": ["exercises for better tone development"]
         }}
+    }},
+    "emotional_expression": {{
+        "assessment": "evaluation of musical expression and communication",
+        "suggestions": ["specific ways to enhance emotional delivery"],
+        "performance_tips": ["practical tips for more engaging performance"]
+    }},
+    "practice_recommendations": {{
+        "immediate_focus": "top priority for the next 10-15 minutes of practice",
+        "daily_exercises": ["4-5 daily exercises with time recommendations"],
+        "weekly_goals": ["2-3 achievable goals for this week"],
+        "long_term_development": "roadmap for continued growth over next month"
+    }},
+    "motivational_message": "personalized, encouraging message highlighting their unique vocal potential",
+    "next_session_prep": "specific preparation and mindset for next practice session"
+}}
 
-        Be specific, encouraging, and actionable. Focus on the most important areas for improvement while acknowledging strengths.
-        """
+Focus on being a coach who truly understands this singer's voice and provides wisdom that will accelerate their development. Make every recommendation specific and actionable."""
 
-        # Call Groq API
+        # Call Groq API with optimized parameters for vocal feedback
         response = groq_client.chat.completions.create(
-            model="llama3-8b-8192",  # Using Llama3 for better reasoning
+            model="llama3-8b-8192",  # Using Llama3 for better reasoning and analysis
             messages=[
+                {
+                    "role": "system",
+                    "content": "You are a master vocal coach with expertise in voice science, performance psychology, and pedagogical techniques. You provide detailed, actionable feedback that helps singers improve rapidly while maintaining vocal health. Your responses are always encouraging yet technically precise."
+                },
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
-            temperature=0.7,  # Balanced creativity and consistency
-            max_tokens=1500,
-            top_p=0.9
+            temperature=0.75,  # Balanced creativity and analytical precision
+            max_tokens=2000,   # Increased for comprehensive feedback
+            top_p=0.85,        # Slightly more focused for technical accuracy
+            frequency_penalty=0.1,  # Reduce repetition
+            presence_penalty=0.15   # Encourage comprehensive coverage
         )
         
         feedback_content = response.choices[0].message.content.strip()
