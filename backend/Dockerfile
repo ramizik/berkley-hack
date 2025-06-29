@@ -4,6 +4,18 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
+# Accept build arguments
+ARG GROQ_API_KEY
+ARG LETTA_API_KEY
+ARG SUPABASE_URL
+ARG SUPABASE_SERVICE_ROLE_KEY
+
+# Set environment variables from build args (for build-time tests)
+ENV GROQ_API_KEY=${GROQ_API_KEY}
+ENV LETTA_API_KEY=${LETTA_API_KEY}
+ENV SUPABASE_URL=${SUPABASE_URL}
+ENV SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+
 # Set environment variables to force PEP 517 mode and avoid gRPC build issues
 ENV PIP_USE_PEP517=true
 ENV GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
