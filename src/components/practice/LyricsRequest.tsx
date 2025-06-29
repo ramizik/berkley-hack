@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Music, Sparkles, Loader2, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Music, Sparkles, Loader2, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface LyricsRequestProps {
   onLyricsGenerated?: (lyrics: string) => void;
@@ -10,7 +10,6 @@ const LyricsRequest: React.FC<LyricsRequestProps> = ({ onLyricsGenerated }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedLyrics, setGeneratedLyrics] = useState<string>('');
-  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
@@ -249,16 +248,6 @@ Music lifts us up when we're ready to fall
     return selectedLyrics + (difficultyNotes[difficulty as keyof typeof difficultyNotes] || difficultyNotes.beginner);
   };
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedLyrics);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy lyrics:', error);
-    }
-  };
-
   return (
     <div className="mb-6">
       {/* Toggle Button */}
@@ -465,24 +454,6 @@ Music lifts us up when we're ready to fall
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-lg font-semibold text-white">Generated Lyrics (15 seconds)</h4>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={copyToClipboard}
-                  className="px-3 py-1 bg-purple-accent/20 text-purple-accent rounded-lg hover:bg-purple-accent/30 transition-colors flex items-center space-x-2"
-                >
-                  {copied ? (
-                    <>
-                      <Check size={14} />
-                      <span className="text-sm">Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      <span className="text-sm">Copy</span>
-                    </>
-                  )}
-                </motion.button>
               </div>
               
               <div className="bg-dark border border-dark-accent rounded-lg p-4">
@@ -491,7 +462,7 @@ Music lifts us up when we're ready to fall
                 </pre>
               </div>
               
-              <div className="flex justify-between">
+              <div className="flex justify-center">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -509,15 +480,6 @@ Music lifts us up when we're ready to fall
                   className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
                 >
                   Generate New Lyrics
-                </motion.button>
-                
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 bg-purple-accent text-white rounded-lg hover:bg-purple-light transition-colors"
-                >
-                  Use These Lyrics
                 </motion.button>
               </div>
             </div>
