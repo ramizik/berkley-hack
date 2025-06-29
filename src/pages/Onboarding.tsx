@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Mic, Music, Volume2, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
@@ -140,6 +142,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 )}
               </button>
               
+              {/* Fixed height container for sound visualization */}
               {isRecording && (
                 <div className="absolute bottom-8 left-0 right-0 flex justify-center">
                   {/* Fixed height container for sound bars */}
@@ -158,9 +161,12 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   </div>
                 </div>
               )}
-              
+            </div>
+            
+            {/* Fixed height container for recording status */}
+            <div className="h-32 flex flex-col items-center justify-start">
               {isRecording && (
-                <div className="absolute -bottom-12 left-0 right-0 text-center h-24">
+                <div className="text-center mb-4">
                   <div className="text-lg font-bold text-purple-light">
                     {formatTime(recordingDuration)}
                   </div>
@@ -174,42 +180,42 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   )}
                 </div>
               )}
+              
+              {isAnalyzing && (
+                <div className="h-20 flex flex-col items-center justify-center">
+                  <div className="w-8 h-8 border-4 border-purple-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-purple-light font-medium">Analyzing your vocal profile...</p>
+                  <p className="text-sm text-gray-400 mt-1">Processing with AI voice analysis</p>
+                </div>
+              )}
+              
+              {analysisComplete && (
+                <div className="h-20 flex flex-col items-center justify-center">
+                  <p className="text-green-400 font-medium flex items-center justify-center">
+                    <CheckCircle size={20} className="mr-2" />
+                    Voice analysis complete!
+                  </p>
+                  <button 
+                    onClick={handleNext}
+                    className="mt-4 px-6 py-3 bg-purple-accent text-white font-medium rounded-lg hover:bg-purple-light transition-colors"
+                  >
+                    Continue <ArrowRight size={16} className="ml-2 inline" />
+                  </button>
+                </div>
+              )}
+              
+              {recordingComplete && !isAnalyzing && !analysisComplete && (
+                <div className="h-20 flex flex-col items-center justify-center">
+                  <p className="text-green-400 font-medium mb-4">Recording saved successfully!</p>
+                  <button 
+                    onClick={resetRecording}
+                    className="px-4 py-2 border border-gray-500 text-gray-300 rounded-lg hover:bg-gray-500/10 transition-colors mr-3"
+                  >
+                    Record Again
+                  </button>
+                </div>
+              )}
             </div>
-            
-            {isAnalyzing && (
-              <div className="mb-4 h-20 flex flex-col items-center justify-center">
-                <div className="w-8 h-8 border-4 border-purple-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-purple-light font-medium">Analyzing your vocal profile...</p>
-                <p className="text-sm text-gray-400 mt-1">Processing with AI voice analysis</p>
-              </div>
-            )}
-            
-            {analysisComplete && (
-              <div className="mb-6 h-20 flex flex-col items-center justify-center">
-                <p className="text-green-400 font-medium flex items-center justify-center">
-                  <CheckCircle size={20} className="mr-2" />
-                  Voice analysis complete!
-                </p>
-                <button 
-                  onClick={handleNext}
-                  className="mt-4 px-6 py-3 bg-purple-accent text-white font-medium rounded-lg hover:bg-purple-light transition-colors"
-                >
-                  Continue <ArrowRight size={16} className="ml-2 inline" />
-                </button>
-              </div>
-            )}
-            
-            {recordingComplete && !isAnalyzing && !analysisComplete && (
-              <div className="mb-6 h-20 flex flex-col items-center justify-center">
-                <p className="text-green-400 font-medium mb-4">Recording saved successfully!</p>
-                <button 
-                  onClick={resetRecording}
-                  className="px-4 py-2 border border-gray-500 text-gray-300 rounded-lg hover:bg-gray-500/10 transition-colors mr-3"
-                >
-                  Record Again
-                </button>
-              </div>
-            )}
           </div>
         );
       
