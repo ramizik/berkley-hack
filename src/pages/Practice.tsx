@@ -524,32 +524,12 @@ const Practice: React.FC = () => {
                         <motion.button 
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="w-12 h-12 rounded-full bg-purple-accent flex items-center justify-center text-white hover:bg-purple-light transition-colors"
-                        >
-                          <Play size={20} />
-                        </motion.button>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                {/* View Full AI Feedback Button */}
-                {aiFeedback && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 flex justify-center"
-                  >
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setIsFeedbackModalOpen(true)}
-                      className="px-6 py-2 bg-gradient-to-r from-purple-accent to-blue-accent text-white font-medium rounded-lg hover:opacity-90 transition-all flex items-center space-x-2"
-                    >
-                      <MessageSquare size={16} />
-                      <span>View Full AI Feedback</span>
-                    </motion.button>
-                  </motion.div>
+                {/* Error Display */}
+                {error && (
+                  <div className="mb-6 p-3 bg-red-accent/10 border border-red-accent/30 rounded-lg flex items-start max-w-md">
+                    <AlertCircle size={16} className="text-red-accent mr-2 flex-shrink-0 mt-0.5" />
+                    <div className="text-base text-red-light">{error}</div>
+                  </div>
                 )}
 
                 {/* Save Status */}
