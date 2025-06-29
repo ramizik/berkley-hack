@@ -515,25 +515,6 @@ const Practice: React.FC = () => {
                   )}
                 </div>
 
-                {/* View Full AI Feedback Button */}
-                {aiFeedback && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 flex justify-center"
-                  >
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setIsFeedbackModalOpen(true)}
-                      className="px-6 py-2 bg-gradient-to-r from-purple-accent to-blue-accent text-white font-medium rounded-lg hover:opacity-90 transition-all flex items-center space-x-2"
-                    >
-                      <MessageSquare size={16} />
-                      <span>View Full AI Feedback</span>
-                    </motion.button>
-                  </motion.div>
-                )}
-
                 {/* Save Status */}
                 {saveStatus !== 'idle' && (
                   <div className="mt-6 flex items-center justify-center">
