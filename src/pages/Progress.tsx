@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronDown, TrendingUp, Clock, BarChart2, ChevronLeft, ChevronRight, FileText, Sparkles, AlertCircle, RefreshCw, CheckCircle, X, MessageCircle, Brain } from 'lucide-react';
+import { Calendar, ChevronDown, TrendingUp, Clock, BarChart2, ChevronLeft, ChevronRight, FileText, Sparkles, AlertCircle, RefreshCw, CheckCircle, X, MessageCircle, Brain, User, Target, Activity } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
-import LettaChat from '../components/letta/LettaChat';
+import UniversalLettaChat from '../components/shared/UniversalLettaChat';
 
 // Helper to format date as YYYY-MM-DD in local timezone
 const toYYYYMMDD = (date: Date) => {
@@ -485,83 +485,110 @@ const Progress: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          {/* Summary */}
+          {/* Personal AI Coach Card */}
           <div className="card">
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <Brain size={18} className="mr-2 text-purple-accent" />
-              Letta Analysis Summary
-            </h3>
-            <p className="text-gray-300 leading-relaxed mb-6 text-base">
-              You can choose one of the Letta performance agents which are specialized in one particular analysis. Letta knows about your practice sessions on particular day and changes in your voice metrics.
-            </p>
-            
-            {/* Enhanced Letta Integration */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <motion.button
-                onClick={() => setIsLettaOpen(true)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-gradient-to-r from-purple-accent to-red-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
-              >
-                <Brain size={16} />
-                <span className="text-base">Vocal Personality Coach Agent</span>
-              </motion.button>
-              
-              <motion.button
-                onClick={() => {
-                  // Trigger health monitoring analysis
-                  const currentReport = getCurrentReport();
-                  if (currentReport && user) {
-                    // Call health monitoring API
-                    fetch(`${import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080'}/api/letta/health/monitor`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        user_id: user.id,
-                        vocal_metrics: currentReport.vocal_metrics,
-                        environmental_data: {}
-                      })
-                    }).then(res => res.json()).then(data => {
-                      console.log('Health monitoring result:', data);
-                      setIsLettaOpen(true);
-                    });
-                  }
-                }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-gradient-to-r from-blue-accent to-purple-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
-              >
-                <CheckCircle size={16} />
-                <span className="text-base">Vocal Health and Wellness Agent</span>
-              </motion.button>
-              
-              <motion.button
-                onClick={() => {
-                  // Trigger personality evolution analysis
-                  const currentReport = getCurrentReport();
-                  if (currentReport && user) {
-                    // Call personality analysis API
-                    fetch(`${import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080'}/api/letta/personality/analyze`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        user_id: user.id,
-                        vocal_metrics: currentReport.vocal_metrics
-                      })
-                    }).then(res => res.json()).then(data => {
-                      console.log('Personality evolution result:', data);
-                      setIsLettaOpen(true);
-                    });
-                  }
-                }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-gradient-to-r from-red-accent to-blue-accent text-white font-medium py-3 px-3 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
-              >
-                <Sparkles size={16} />
-                <span className="text-base">Vocal Historical Evolution Agent</span>
-              </motion.button>
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-accent to-blue-accent flex items-center justify-center flex-shrink-0">
+                  <Brain size={24} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-2 flex items-center">
+                    Your Personal AI Vocal Coach
+                    <Sparkles size={20} className="ml-2 text-purple-accent" />
+                  </h3>
+                  <p className="text-gray-300 text-lg mb-4">
+                    I've analyzed your vocal data for {selectedDate.toLocaleDateString('en-US', { 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })} and I'm ready to discuss your progress!
+                  </p>
+                  
+                  {/* What I can help with */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-purple-accent/10 border border-purple-accent/20 rounded-lg p-4">
+                      <div className="flex items-center mb-2">
+                        <Activity size={16} className="text-purple-accent mr-2" />
+                        <h4 className="font-semibold text-purple-accent">Vocal Data Analysis</h4>
+                      </div>
+                      <p className="text-sm text-gray-300">
+                        Explain your jitter, shimmer, pitch trends and what they mean for your voice
+                      </p>
+                    </div>
+                    
+                    <div className="bg-blue-accent/10 border border-blue-accent/20 rounded-lg p-4">
+                      <div className="flex items-center mb-2">
+                        <Target size={16} className="text-blue-accent mr-2" />
+                        <h4 className="font-semibold text-blue-accent">Targeted Exercises</h4>
+                      </div>
+                      <p className="text-sm text-gray-300">
+                        Get specific exercises based on your current vocal metrics and goals
+                      </p>
+                    </div>
+                    
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                      <div className="flex items-center mb-2">
+                        <TrendingUp size={16} className="text-green-500 mr-2" />
+                        <h4 className="font-semibold text-green-500">Progress Insights</h4>
+                      </div>
+                      <p className="text-sm text-gray-300">
+                        Understand how your voice has changed and what to focus on next
+                      </p>
+                    </div>
+                    
+                    <div className="bg-pink-500/10 border border-pink-500/20 rounded-lg p-4">
+                      <div className="flex items-center mb-2">
+                        <User size={16} className="text-pink-500 mr-2" />
+                        <h4 className="font-semibold text-pink-500">Personal Coaching</h4>
+                      </div>
+                      <p className="text-sm text-gray-300">
+                        Get encouragement, motivation, and answers to your vocal questions
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+            
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-dark-lighter rounded-lg p-3 text-center">
+                <div className="text-sm text-gray-400 mb-1">Practice Sessions</div>
+                <div className="text-xl font-bold text-purple-accent">
+                  {getCurrentReport()?.practice_sessions || 0}
+                </div>
+              </div>
+              <div className="bg-dark-lighter rounded-lg p-3 text-center">
+                <div className="text-sm text-gray-400 mb-1">Practice Time</div>
+                <div className="text-xl font-bold text-blue-accent">
+                  {getCurrentReport()?.total_practice_time || 0}m
+                </div>
+              </div>
+              <div className="bg-dark-lighter rounded-lg p-3 text-center">
+                <div className="text-sm text-gray-400 mb-1">Voice Type</div>
+                <div className="text-xl font-bold text-green-500">
+                  {getCurrentReport()?.range_metrics?.voice_type?.current || 'Unknown'}
+                </div>
+              </div>
+              <div className="bg-dark-lighter rounded-lg p-3 text-center">
+                <div className="text-sm text-gray-400 mb-1">Best Time</div>
+                <div className="text-xl font-bold text-pink-500">
+                  {getCurrentReport()?.best_time_of_day || 'N/A'}
+                </div>
+              </div>
+            </div>
+            
+            {/* CTA Button */}
+            <motion.button
+              onClick={() => setIsLettaOpen(true)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-gradient-to-r from-purple-accent to-blue-accent text-white font-semibold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-3 text-lg"
+            >
+              <MessageCircle size={24} />
+              <span>Start Conversation with Your AI Coach</span>
+              <Brain size={24} />
+            </motion.button>
           </div>
 
           {/* Vocal Metrics */}
@@ -633,12 +660,17 @@ const Progress: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Letta Chat */}
-      <LettaChat
+      {/* Universal Letta Chat */}
+      <UniversalLettaChat
         isOpen={isLettaOpen}
         onClose={() => setIsLettaOpen(false)}
-        fetchAiReport={getCurrentReport()}
-        conversationType="daily_feedback"
+        contextType="progress"
+        contextData={{
+          date: toYYYYMMDD(selectedDate),
+          fetchAiReport: getCurrentReport()
+        }}
+        title="Your Personal Vocal Coach"
+        description="Discuss your vocal data, trends, and get targeted improvement advice"
       />
     </motion.div>
   );

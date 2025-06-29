@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, BarChart, BookOpen, Mic, MicOff, Brain, Sparkles, AlertTriangle, X, CheckCircle, Target, Phone, PhoneOff, Play, Pause, Volume2, VolumeX, TrendingUp, Zap, RotateCcw, Music, Headphones, Activity, BarChart3, ArrowRight, Users, Radio, Square, AudioWaveform as Waveform, MessageCircle, Star } from 'lucide-react';
+import { Clock, BarChart, BookOpen, Mic, MicOff, Brain, Sparkles, AlertCircle, X, CheckCircle, Target, Phone, PhoneOff, Play, Pause, Volume2, VolumeX, TrendingUp, Zap, RotateCcw, Music, Headphones, Activity, BarChart3, ArrowRight, Users, Radio, Square, AudioWaveform as Waveform, MessageCircle, Star } from 'lucide-react';
 import { useVocalProfile } from '../context/VocalProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useVoiceAnalysis } from '../lib/useVoiceAnalysis';
-import LettaChat from '../components/letta/LettaChat';
+import UniversalLettaChat from '../components/shared/UniversalLettaChat';
 
 interface SessionState {
   phase: 'welcome' | 'recording' | 'analyzing' | 'feedback' | 'complete';
@@ -301,7 +301,7 @@ const Lessons: React.FC = () => {
           >
             <div className="flex items-center space-x-2">
               {notificationType === 'success' && <CheckCircle size={20} />}
-              {notificationType === 'error' && <AlertTriangle size={20} />}
+              {notificationType === 'error' && <AlertCircle size={20} />}
               {notificationType === 'info' && <Activity size={20} />}
               <span className="font-medium text-base">{notificationMessage}</span>
             </div>
@@ -706,7 +706,7 @@ const Lessons: React.FC = () => {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setIsLettaOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors text-base font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-base font-medium"
             >
               <Brain size={16} />
               AI Lesson Advisor
@@ -802,11 +802,18 @@ const Lessons: React.FC = () => {
           ))}
         </div>
 
-        <LettaChat
+        <UniversalLettaChat
           isOpen={isLettaOpen}
           onClose={() => setIsLettaOpen(false)}
-          fetchAiReport={analysisResult}
-          conversationType="exercise_guidance"
+          contextType="lessons"
+          contextData={{
+            lessonContext: {
+              selectedCategory,
+              availableLessons: filteredLessons
+            }
+          }}
+          title="AI Lesson Advisor"
+          description="Get personalized lesson recommendations and vocal technique guidance"
         />
       </div>
     </motion.div>
