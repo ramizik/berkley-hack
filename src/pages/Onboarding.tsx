@@ -160,7 +160,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               )}
               
               {isRecording && (
-                <div className="absolute -bottom-12 left-0 right-0 text-center">
+                <div className="absolute -bottom-12 left-0 right-0 text-center h-24">
                   <div className="text-lg font-bold text-purple-light">
                     {formatTime(recordingDuration)}
                   </div>
@@ -177,7 +177,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             </div>
             
             {isAnalyzing && (
-              <div className="mb-4">
+              <div className="mb-4 h-20 flex flex-col items-center justify-center">
                 <div className="w-8 h-8 border-4 border-purple-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                 <p className="text-purple-light font-medium">Analyzing your vocal profile...</p>
                 <p className="text-sm text-gray-400 mt-1">Processing with AI voice analysis</p>
@@ -185,7 +185,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
             
             {analysisComplete && (
-              <div className="mb-6">
+              <div className="mb-6 h-20 flex flex-col items-center justify-center">
                 <p className="text-green-400 font-medium flex items-center justify-center">
                   <CheckCircle size={20} className="mr-2" />
                   Voice analysis complete!
@@ -200,7 +200,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
             
             {recordingComplete && !isAnalyzing && !analysisComplete && (
-              <div className="mb-6">
+              <div className="mb-6 h-20 flex flex-col items-center justify-center">
                 <p className="text-green-400 font-medium mb-4">Recording saved successfully!</p>
                 <button 
                   onClick={resetRecording}
