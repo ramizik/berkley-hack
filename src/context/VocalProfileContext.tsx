@@ -53,11 +53,17 @@ export const VocalProfileProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch user profile when user changes
+  // Fetch user profile when user ID changes (but not on every auth state change)
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user || authLoading) {
         setLoading(authLoading);
+        return;
+      }
+
+      // Don't refetch if we already have a profile for this user
+      if (profile && profile.id === user.id) {
+        setLoading(false);
         return;
       }
 
@@ -138,7 +144,7 @@ export const VocalProfileProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     fetchProfile();
-  }, [user, authLoading]);
+  }, [user?.id, authLoading, profile?.id]);
 
   const updateVocalProfile = async (profileData: Partial<VocalProfile>) => {
     if (!user || !profile) {
