@@ -100,14 +100,14 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       
       case 2:
         return (
-          <div className="text-center">
+          <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold mb-2 text-white">Record Your Voice</h2>
-            <p className="text-gray-300 mb-4 max-w-md mx-auto">
+            <p className="text-gray-300 mb-4 max-w-lg mx-auto">
               We need to analyze your voice to determine your vocal characteristics. Please sing a few notes, scales, or hum a melody.
             </p>
             
-            {/* Lyrics Generator */}
-            <div className="mb-6 max-w-md mx-auto">
+            {/* Lyrics Generator - Wider container */}
+            <div className="mb-6 max-w-2xl mx-auto">
               <LyricsRequest onLyricsGenerated={setCurrentLyrics} />
               
               {currentLyrics && (
@@ -119,7 +119,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             </div>
             
             {error && (
-              <div className="mb-6 p-3 bg-red-accent/10 border border-red-accent/30 rounded-lg flex items-start max-w-md mx-auto">
+              <div className="mb-6 p-3 bg-red-accent/10 border border-red-accent/30 rounded-lg flex items-start max-w-lg mx-auto">
                 <AlertCircle size={16} className="text-red-accent mr-2 flex-shrink-0 mt-0.5" />
                 <div className="text-left">
                   <p className="text-red-light text-sm">{error}</p>
@@ -184,11 +184,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   <div className="text-lg font-bold text-purple-light">
                     {formatTime(recordingDuration)}
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-gray-400 mb-2">
                     Recording... (max 15 seconds)
                   </div>
                   {currentNote && (
-                    <div className="mt-2 text-lg font-bold text-purple-accent">
+                    <div className="text-lg font-bold text-purple-accent">
                       {displayedNote || currentNote} ({currentPitch} Hz)
                     </div>
                   )}
@@ -235,13 +235,13 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       
       case 3:
         return (
-          <div className="text-center">
+          <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold mb-2 text-white">Your Voice Analysis</h2>
-            <p className="text-gray-300 mb-8 max-w-md mx-auto">
+            <p className="text-gray-300 mb-8 max-w-lg mx-auto">
               Based on our analysis, here are your vocal characteristics.
             </p>
             
-            <div className="bg-slate-800/40 rounded-xl p-6 border border-slate-600/30 max-w-lg mx-auto mb-8 backdrop-blur-md">
+            <div className="bg-slate-800/40 rounded-xl p-6 border border-slate-600/30 max-w-xl mx-auto mb-8 backdrop-blur-md">
               <div className="flex items-center justify-center mb-4">
                 <div className="w-12 h-12 rounded-full bg-purple-accent flex items-center justify-center mr-4">
                   <Music size={24} className="text-white" />
@@ -308,8 +308,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         </div>
       </div>
       
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10">
-        <div className="w-full max-w-2xl">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 overflow-y-auto">
+        <div className="w-full max-w-4xl">
           {renderStep()}
           
           {step > 1 && (
