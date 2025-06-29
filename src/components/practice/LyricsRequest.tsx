@@ -41,6 +41,67 @@ const LyricsRequest: React.FC<LyricsRequestProps> = ({ onLyricsGenerated }) => {
     { value: 'advanced', label: 'Advanced', description: 'Wide range (2+ octaves), complex rhythms, advanced techniques' }
   ];
 
+  const cleanupLyrics = (lyrics: string): string => {
+    // Remove technical annotations and metadata
+    let cleaned = lyrics
+      // Remove bracket annotations like [Original Practice Song - Jazz Style]
+      .replace(/\[.*?\]/g, '')
+      // Remove emoji/musical note technical info like 🎵 Vocal Range: A3-E5 | BPM: 96 | Key: E minor
+      .replace(/🎵.*?\n/g, '')
+      // Remove practice notes sections
+      .replace(/\[?\*?\*?Practice Notes?:?\*?\*?\]?.*?\n/gi, '')
+      // Remove technical headers like **Original Practice Song - Jazz Style**
+      .replace(/\*\*.*?\*\*/g, '')
+      // Remove version/style headers
+      .replace(/^.*?- (Style|Version).*?\n/gm, '')
+      // Remove [Verse - ...] annotations
+      .replace(/\[Verse[^\]]*\]/g, '')
+      // Remove any remaining square bracket content
+      .replace(/\[[^\]]*\]/g, '')
+      // Remove lines that are just technical info
+      .replace(/^(Here's a brand new|Vocal Range:|BPM:|Key:|Focus on|Pay attention to).*?\n/gm, '')
+      // Clean up multiple newlines
+      .replace(/\n\s*\n\s*\n/g, '\n\n')
+      // Remove leading/trailing whitespace
+      .trim();
+    
+    // If the cleaned lyrics are too short (less than 4 lines), generate fallback
+    const lines = cleaned.split('\n').filter(line => line.trim().length > 0);
+    if (lines.length < 4) {
+      // Extract any usable lyrics from the original and extend them
+      const lyricsLines = lines.filter(line => 
+        !line.includes('Practice') && 
+        !line.includes('BPM') && 
+        !line.includes('Key') &&
+        !line.includes('Range') &&
+        line.length > 10
+      );
+      
+      if (lyricsLines.length >= 2) {
+        // Use the existing lines and add generic continuation
+        return lyricsLines.join('\n') + '\n' + 
+               'Every note I sing rings true\n' +
+               'Music flows from me to you\n' +
+               'In this moment we are free\n' +
+               'Lost in perfect harmony\n' +
+               'Voices rising to the sky\n' +
+               'Time and space go floating by';
+      } else {
+        // Return a generic practice song
+        return `Let the music fill your soul
+Every note will make you whole
+Sing with passion, sing with grace
+Let the rhythm set the pace
+In this moment we are one
+Until the very last note's done
+Practice makes the heart grow strong
+Join me in this practice song`;
+      }
+    }
+    
+    return cleaned;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsGenerating(true);
@@ -73,8 +134,10 @@ const LyricsRequest: React.FC<LyricsRequestProps> = ({ onLyricsGenerated }) => {
       const result = await response.json();
       
       if (result.success) {
-        setGeneratedLyrics(result.data.lyrics);
-        onLyricsGenerated?.(result.data.lyrics);
+        // Clean up the lyrics by removing technical information
+        const cleanLyrics = cleanupLyrics(result.data.lyrics);
+        setGeneratedLyrics(cleanLyrics);
+        onLyricsGenerated?.(cleanLyrics);
       } else {
         throw new Error(result.message || 'Failed to generate lyrics');
       }
@@ -94,138 +157,147 @@ const LyricsRequest: React.FC<LyricsRequestProps> = ({ onLyricsGenerated }) => {
   const generateMockLyrics = (data: typeof formData): string => {
     const { genre, mood, theme, difficulty } = data;
     
-    // Public domain and original practice lyrics designed for vocal training
-    const publicDomainSongs = {
-      classical: [
-        `[Amazing Grace - Public Domain]
-Amazing grace, how sweet the sound
-That saved a wretch like me
-I once was lost, but now am found
-Was blind, but now I see`,
-
-        `[Swing Low, Sweet Chariot - Public Domain]  
-Swing low, sweet chariot
-Coming for to carry me home
-Swing low, sweet chariot
-Coming for to carry me home`
-      ],
-      folk: [
-        `[She'll Be Coming 'Round the Mountain - Public Domain]
-She'll be coming 'round the mountain when she comes
-She'll be coming 'round the mountain when she comes
-She'll be coming 'round the mountain
-She'll be coming 'round the mountain
-She'll be coming 'round the mountain when she comes`,
-
-        `[Home on the Range - Public Domain]
-Home, home on the range
-Where the deer and the antelope play
-Where seldom is heard a discouraging word
-And the skies are not cloudy all day`
-      ]
-    };
-
-    const originalPracticeLyrics = {
+    // Clean practice lyrics designed for 15-second recordings (approximately 8-12 lines)
+    const practiceLyrics = {
       pop: {
-        happy: `[Original Practice Song - Upbeat Pop Style]
-🎵 Vocal Range: C4-G4 | BPM: 120 | Key: C Major
-
-[Verse - Clear pronunciation practice]
-Walking through the city lights tonight (tonight)
-Everything is shining oh so bright (so bright)  
+        happy: `Walking through the city lights tonight
+Everything is shining oh so bright
 Feel the rhythm in my heart so strong
 This is where I know that I belong
+Dancing to the beat of my own song
+Nothing in this world could go wrong
+Singing out with all my might
+Everything's gonna be alright`,
 
-[Practice Notes: Focus on clear consonants and smooth vowel transitions]`,
-
-        melancholic: `[Original Practice Song - Ballad Style]
-🎵 Vocal Range: A3-F4 | BPM: 70 | Key: A Minor
-
-[Verse - Breath control practice]
-Gentle raindrops on my window pane
+        melancholic: `Gentle raindrops on my window pane
 Tell a story of both joy and pain
 Every breath I take reminds me how
 To live each moment in the here and now
+Memories fade but feelings stay
+Guiding me through another day
+In the silence I can hear
+All the things I hold most dear`,
 
-[Practice Notes: Focus on sustained notes and emotional expression]`,
-
-        energetic: `[Original Practice Song - Energetic Style]
-🎵 Vocal Range: D4-A4 | BPM: 140 | Key: D Major
-
-[Verse - Articulation practice]
-Rise up, stand tall, let your voice be heard
+        energetic: `Rise up, stand tall, let your voice be heard
 Every single note, every single word
 Power from within, let it shine so bright
 You were born to sing, born to reach new heights
-
-[Practice Notes: Strong consonants, powerful chest voice]`
+Break the chains that hold you down
+Turn that frown into a crown
+Sing it loud, sing it proud
+Make your voice rise above the crowd`
       },
 
       rock: {
-        energetic: `[Original Practice Song - Rock Style]
-🎵 Vocal Range: E3-B4 | BPM: 130 | Key: E Minor
-
-[Verse - Power and control]
-Thunder in my veins, lightning in my soul
+        energetic: `Thunder in my veins, lightning in my soul
 Nothing's gonna stop me from reaching my goal
 Scream it to the world, let them hear you roar
 This is what we came here fighting for
+Break the silence, break the chains
+Let the music heal the pain
+Rock and roll will never die
+Reach up and touch the sky`,
 
-[Practice Notes: Mix voice technique, strong belt tones]`,
-
-        passionate: `[Original Practice Song - Rock Ballad]
-🎵 Vocal Range: C3-G4 | BPM: 80 | Key: C Major
-
-[Verse - Dynamic control]
-In the silence of the night I call your name
+        passionate: `In the silence of the night I call your name
 Through the darkness, through the cold, through the rain
 Every heartbeat tells me what I need to know
 Some things in this life you never let go
-
-[Practice Notes: Soft to powerful dynamics, vibrato control]`
+Hold on tight to what is real
+Time will slowly help you heal
+Love will find a way to grow
+Even when the wind won't blow`
       },
 
       jazz: {
-        smooth: `[Original Practice Song - Jazz Standard Style]
-🎵 Vocal Range: Bb3-F4 | BPM: 90 | Key: Bb Major
-
-[Verse - Smooth phrasing]
-Moonlight dancing on the water's edge
+        smooth: `Moonlight dancing on the water's edge
 Making promises that we both pledge
 Time moves slowly when you're by my side
 In this moment, let our hearts collide
+Smooth as silk and soft as rain
+Washing away all the pain
+Jazz will take us to that place
+Where time and space cannot erase`,
 
-[Practice Notes: Smooth legato, subtle runs, jazz phrasing]`,
-
-        swing: `[Original Practice Song - Swing Style]
-🎵 Vocal Range: C4-Ab4 | BPM: 120 | Key: F Major
-
-[Verse - Rhythmic precision]
-Swing it high, swing it low, feel that beat
+        swing: `Swing it high, swing it low, feel that beat
 Move your body to the rhythm so sweet
 Jazz is calling and we answer the call
 Music lifts us up when we're ready to fall
+Syncopated rhythms fill the air
+Dancing like we just don't care
+Swing those notes with style and grace
+Put a smile upon your face`
+      },
 
-[Practice Notes: Syncopated rhythm, clear diction, swing feel]`
+      classical: {
+        calm: `Amazing grace, how sweet the sound
+That saved a wretch like me
+I once was lost, but now am found
+Was blind, but now I see
+'Twas grace that taught my heart to fear
+And grace my fears relieved
+How precious did that grace appear
+The hour I first believed`,
+
+        uplifting: `Morning sun begins to rise
+Painting colors in the skies
+Birds are singing in the trees
+Dancing gently in the breeze
+Nature's symphony so grand
+Touches every heart and hand
+Lift your voice and sing along
+Join this everlasting song`
+      },
+
+      folk: {
+        nostalgic: `Home, home on the range
+Where the deer and the antelope play
+Where seldom is heard a discouraging word
+And the skies are not cloudy all day
+How often at night when the heavens are bright
+With the light from the glittering stars
+Have I stood here amazed and asked as I gazed
+If their glory exceeds that of ours`,
+
+        happy: `She'll be coming 'round the mountain when she comes
+She'll be coming 'round the mountain when she comes
+She'll be coming 'round the mountain
+She'll be coming 'round the mountain
+She'll be coming 'round the mountain when she comes
+She'll be riding six white horses when she comes
+She'll be riding six white horses when she comes
+She'll be riding six white horses
+She'll be riding six white horses`
+      },
+
+      rb: {
+        smooth: `Sitting by the window watching raindrops fall
+Thinking 'bout the times we used to have it all
+Smooth melodies playing in my mind
+Leaving all the worries far behind
+Soulful rhythms make me feel alive
+In this moment everything's alright
+Let the music take control tonight
+Everything's gonna be just fine`,
+
+        passionate: `Fire burning deep inside my soul
+Music makes me feel like I'm in control
+Every note I sing comes from the heart
+This is where my healing gets to start
+Powerful emotions flowing free
+This is who I'm meant to be
+Sing it with passion, sing it with soul
+Let the rhythm make you whole`
       }
     };
 
     // Select appropriate lyrics based on user preferences
-    if (genre.toLowerCase() === 'classical' || genre.toLowerCase() === 'folk') {
-      const publicDomain = publicDomainSongs[genre.toLowerCase() as keyof typeof publicDomainSongs];
-      if (publicDomain) {
-        return publicDomain[Math.floor(Math.random() * publicDomain.length)];
-      }
-    }
-
-    // Use original practice lyrics
-    const genreKey = genre.toLowerCase() as keyof typeof originalPracticeLyrics;
-    const moodKey = mood.toLowerCase() as keyof typeof originalPracticeLyrics.pop;
+    const genreKey = genre.toLowerCase().replace(/\s+/g, '').replace('&', '').replace('r&b', 'rb') as keyof typeof practiceLyrics;
+    const moodKey = mood.toLowerCase() as keyof typeof practiceLyrics.pop;
     
     let selectedLyrics;
     
-    if (originalPracticeLyrics[genreKey]) {
-      const genreLyrics = originalPracticeLyrics[genreKey];
+    if (practiceLyrics[genreKey]) {
+      const genreLyrics = practiceLyrics[genreKey];
       if (genreLyrics[moodKey]) {
         selectedLyrics = genreLyrics[moodKey];
       } else {
@@ -235,17 +307,10 @@ Music lifts us up when we're ready to fall
       }
     } else {
       // Default to pop if genre not found
-      selectedLyrics = originalPracticeLyrics.pop[moodKey] || originalPracticeLyrics.pop.happy;
+      selectedLyrics = practiceLyrics.pop[moodKey] || practiceLyrics.pop.happy;
     }
 
-    // Add difficulty-specific notes
-    const difficultyNotes = {
-      beginner: "\n\n💡 Beginner Tip: Focus on clear pronunciation and steady breathing. Don't worry about perfection!",
-      intermediate: "\n\n💡 Intermediate Tip: Work on smooth transitions between notes and consistent tone quality.",
-      advanced: "\n\n💡 Advanced Tip: Focus on technical precision, dynamics, and emotional expression."
-    };
-
-    return selectedLyrics + (difficultyNotes[difficulty as keyof typeof difficultyNotes] || difficultyNotes.beginner);
+    return selectedLyrics;
   };
 
   return (
@@ -336,7 +401,7 @@ Music lifts us up when we're ready to fall
                   className="bg-red-500/20 border border-red-500/30 rounded-lg p-3"
                 >
                   <p className="text-red-400 text-sm">
-                    {error} (Using practice lyrics)
+                    {error} - Showing demo practice lyrics instead.
                   </p>
                 </motion.div>
               )}
@@ -453,7 +518,7 @@ Music lifts us up when we're ready to fall
             /* Generated Lyrics Display */
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-lg font-semibold text-white">Generated Lyrics (15 seconds)</h4>
+                <h4 className="text-lg font-semibold text-white">Practice Lyrics</h4>
               </div>
               
               <div className="bg-dark border border-dark-accent rounded-lg p-4">
