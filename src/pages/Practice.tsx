@@ -31,7 +31,7 @@ const Practice: React.FC = () => {
     if (!user || sessionSaved) return; // Prevent duplicate saves
 
     try {
-      setSaveStatus('saving');
+      setSaveStatus('idle'); // Don't show saving status
       setSaveError(null);
       setSessionSaved(true); // Mark as saved immediately to prevent duplicates
 
@@ -64,14 +64,12 @@ const Practice: React.FC = () => {
       }
 
       console.log('Practice session saved successfully');
-      setSaveStatus('saved');
+      setSaveStatus('idle'); // Don't show saved status
       
-      // Reset save status after 3 seconds
-      setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (err) {
       console.error('Failed to save practice session:', err);
       setSaveError(err instanceof Error ? err.message : 'Failed to save session');
-      setSaveStatus('error');
+      setSaveStatus('idle'); // Don't show error status
       setSessionSaved(false); // Reset on error
     }
   }, [user, profile?.username, sessionSaved]);
@@ -489,8 +487,6 @@ const Practice: React.FC = () => {
                   {isAnalyzing && (
                     <div className="text-center">
                       <div className="w-8 h-8 border-4 border-purple-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                      <div className="text-purple-light font-medium text-lg">Analyzing...</div>
-                      <div className="text-base text-gray-400">Processing with AI</div>
                     </div>
                   )}
                   
@@ -516,30 +512,6 @@ const Practice: React.FC = () => {
                     </>
                   )}
                 </div>
-
-                {/* Save Status */}
-                {saveStatus !== 'idle' && (
-                  <div className="mt-6 flex items-center justify-center">
-                    {saveStatus === 'saving' && (
-                      <div className="flex items-center text-blue-accent">
-                        <div className="w-4 h-4 border-2 border-blue-accent border-t-transparent rounded-full animate-spin mr-2"></div>
-                        <span className="text-base">Saving session...</span>
-                      </div>
-                    )}
-                    {saveStatus === 'saved' && (
-                      <div className="flex items-center text-green-400">
-                        <CheckCircle size={16} className="mr-2" />
-                        <span className="text-base">Session saved successfully!</span>
-                      </div>
-                    )}
-                    {saveStatus === 'error' && (
-                      <div className="flex items-center text-red-accent">
-                        <AlertCircle size={16} className="mr-2" />
-                        <span className="text-base">Failed to save: {saveError}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
             
