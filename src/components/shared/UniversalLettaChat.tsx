@@ -36,6 +36,47 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lettaService = LettaService.getInstance();
 
+  // Helper function to format Letta's responses to be more natural and conversational
+  const formatLettaResponse = (content: string): string => {
+    // Remove markdown formatting like ** and ###
+    let formatted = content
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold formatting
+      .replace(/### (.*?):/g, '$1:') // Clean up section headers
+      .replace(/## (.*?):/g, '$1:') // Clean up section headers
+      .replace(/# (.*?):/g, '$1:') // Clean up section headers
+      .replace(/\*\*/g, '') // Remove any remaining ** 
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up excessive line breaks
+      .replace(/- /g, '• ') // Replace markdown bullets with bullet points
+      .trim();
+
+    // Make the response more conversational by replacing formal language patterns
+    formatted = formatted
+      .replace(/\*\*Areas for Improvement & Next Steps:\*\*/gi, "Here's what I think you should focus on next:")
+      .replace(/\*\*Strengths:\*\*/gi, "You're doing really well with:")
+      .replace(/\*\*In summary:\*\*/gi, "Overall,")
+      .replace(/\*\*Next Steps:\*\*/gi, "Here's what I'd suggest:")
+      .replace(/\*\*Recommendations:\*\*/gi, "My recommendations for you:")
+      .replace(/Areas for Improvement & Next Steps:/gi, "Here's what I think you should focus on next:")
+      .replace(/Strengths:/gi, "You're doing really well with:")
+      .replace(/In summary:/gi, "Overall,")
+      .replace(/Next Steps:/gi, "Here's what I'd suggest:")
+      .replace(/Recommendations:/gi, "My recommendations for you:")
+      // Replace technical phrases with more natural ones
+      .replace(/\b(vocal folds are vibrating evenly)\b/gi, "your voice sounds really stable")
+      .replace(/\b(pitch stability)\b/gi, "keeping your pitch steady")
+      .replace(/\b(vibrato refinement)\b/gi, "working on your vibrato")
+      .replace(/\b(consistency of airflow)\b/gi, "breathing steadily")
+      .replace(/\b(breath management)\b/gi, "breathing technique")
+      .replace(/\b(technical base)\b/gi, "foundation")
+      .replace(/\b(trending upward)\b/gi, "getting better")
+      .replace(/\b(your progress deserves to be celebrated)\b/gi, "you should be proud of your progress")
+      // Add more natural transitions
+      .replace(/Want a new routine or specific exercise ideas\?/gi, "Want me to suggest some specific exercises for you?")
+      .replace(/Let me know what interests you!/gi, "Just let me know what you'd like to work on!");
+
+    return formatted;
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -71,9 +112,12 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
       
       setConversationId(result.conversation_id);
       setConversationStarted(true);
+      
+      // Format the starter message to be more natural
+      const formattedStarterMessage = formatLettaResponse(result.starter_message);
       setMessages([{
         role: 'assistant',
-        content: result.starter_message,
+        content: formattedStarterMessage,
         timestamp: new Date().toISOString()
       }]);
 
@@ -108,9 +152,11 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
     try {
       const response = await lettaService.sendMessage(conversationId, user.id, input);
       
+      // Format the response to be more natural and conversational
+      const formattedContent = formatLettaResponse(response.message);
       const assistantMessage: LettaMessage = {
         role: 'assistant',
-        content: response.message,
+        content: formattedContent,
         timestamp: new Date().toISOString()
       };
       
@@ -123,7 +169,7 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
       console.error('Error sending message:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'My apologies, I encountered an error. Could you try asking again?',
+        content: "Sorry about that! Something went wrong on my end. Could you try asking me again? I'm here to help!",
         timestamp: new Date().toISOString()
       }]);
     } finally {
@@ -139,27 +185,27 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
     switch (contextType) {
       case 'lessons':
         return [
-          "What lesson should I start with as a beginner?",
-          "How do I improve my pitch accuracy?",
-          "What exercises help with breath control?"
+          "Where should I start as a beginner?",
+          "How can I sing more in tune?",
+          "Help me with breathing while singing"
         ];
       case 'progress':
         return [
-          "What does my vocal data tell you about my progress?",
-          "What should I focus on improving next?",
-          "How has my voice changed over time?"
+          "What does my data tell you about how I'm doing?",
+          "What should I work on next?",
+          "How has my voice improved recently?"
         ];
       case 'practice':
         return [
-          "What exercises should I do today?",
-          "How can I improve my vocal technique?",
-          "What's the best way to warm up my voice?"
+          "What should I practice today?",
+          "Help me improve my technique",
+          "How should I warm up before singing?"
         ];
       default:
         return [
-          "How can I improve my singing?",
-          "What vocal exercises do you recommend?",
-          "Tell me about my vocal progress"
+          "How can I become a better singer?",
+          "What exercises do you recommend?",
+          "Tell me about my progress"
         ];
     }
   };
@@ -240,7 +286,9 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
                   <div className={`max-w-md rounded-xl p-3 text-white ${
                     msg.role === 'user' ? 'bg-blue-600' : 'bg-gray-800'
                   }`}>
-                    {msg.content}
+                    <div className="whitespace-pre-wrap leading-relaxed">
+                      {msg.content}
+                    </div>
                   </div>
                   {msg.role === 'user' && (
                     <div className="w-8 h-8 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0">
@@ -290,7 +338,7 @@ const UniversalLettaChat: React.FC<UniversalLettaChatProps> = ({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
-                  placeholder="Ask your coach anything..."
+                  placeholder="What would you like to talk about?"
                   className="w-full bg-transparent p-3 focus:outline-none text-white"
                   disabled={isLoading}
                 />

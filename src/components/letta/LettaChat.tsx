@@ -44,11 +44,52 @@ const LettaChat: React.FC<LettaChatProps> = ({ isOpen, onClose, fetchAiReport, c
     setConversationStarted(false);
   };
 
+  // Helper function to format Letta's responses to be more natural and conversational
+  const formatLettaResponse = (content: string): string => {
+    // Remove markdown formatting like ** and ###
+    let formatted = content
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold formatting
+      .replace(/### (.*?):/g, '$1:') // Clean up section headers
+      .replace(/## (.*?):/g, '$1:') // Clean up section headers
+      .replace(/# (.*?):/g, '$1:') // Clean up section headers
+      .replace(/\*\*/g, '') // Remove any remaining ** 
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up excessive line breaks
+      .replace(/- /g, '• ') // Replace markdown bullets with bullet points
+      .trim();
+
+    // Make the response more conversational by replacing formal language patterns
+    formatted = formatted
+      .replace(/\*\*Areas for Improvement & Next Steps:\*\*/gi, "Here's what I think you should focus on next:")
+      .replace(/\*\*Strengths:\*\*/gi, "You're doing really well with:")
+      .replace(/\*\*In summary:\*\*/gi, "Overall,")
+      .replace(/\*\*Next Steps:\*\*/gi, "Here's what I'd suggest:")
+      .replace(/\*\*Recommendations:\*\*/gi, "My recommendations for you:")
+      .replace(/Areas for Improvement & Next Steps:/gi, "Here's what I think you should focus on next:")
+      .replace(/Strengths:/gi, "You're doing really well with:")
+      .replace(/In summary:/gi, "Overall,")
+      .replace(/Next Steps:/gi, "Here's what I'd suggest:")
+      .replace(/Recommendations:/gi, "My recommendations for you:")
+      // Replace technical phrases with more natural ones
+      .replace(/\b(vocal folds are vibrating evenly)\b/gi, "your voice sounds really stable")
+      .replace(/\b(pitch stability)\b/gi, "keeping your pitch steady")
+      .replace(/\b(vibrato refinement)\b/gi, "working on your vibrato")
+      .replace(/\b(consistency of airflow)\b/gi, "breathing steadily")
+      .replace(/\b(breath management)\b/gi, "breathing technique")
+      .replace(/\b(technical base)\b/gi, "foundation")
+      .replace(/\b(trending upward)\b/gi, "getting better")
+      .replace(/\b(your progress deserves to be celebrated)\b/gi, "you should be proud of your progress")
+      // Add more natural transitions
+      .replace(/Want a new routine or specific exercise ideas\?/gi, "Want me to suggest some specific exercises for you?")
+      .replace(/Let me know what interests you!/gi, "Just let me know what you'd like to work on!");
+
+    return formatted;
+  };
+
   const startConversation = async () => {
     if (!user || conversationStarted || isLoading) return;
     setIsLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+      const apiUrl = (import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080').replace(/\/$/, '');
       const formData = new FormData();
       formData.append('user_id', user.id);
       formData.append('conversation_type', conversationType);
@@ -68,7 +109,13 @@ const LettaChat: React.FC<LettaChatProps> = ({ isOpen, onClose, fetchAiReport, c
       
       setConversationId(data.data.conversation_id);
       setConversationStarted(true);
-      setMessages([{ role: 'assistant', content: "Hello! I'm Letta, your personal voice coach. I've reviewed your daily report. What would you like to discuss?" }]);
+      
+      // More natural, friendly greeting
+      const greeting = fetchAiReport 
+        ? `Hey there! I've just looked over your progress from ${fetchAiReport.date} and I'm excited to chat about how you're doing. You've got some really interesting things happening with your voice! What would you like to talk about?`
+        : `Hi! I'm here as your personal voice coach. I'd love to help you with whatever you're working on. What's on your mind today?`;
+      
+      setMessages([{ role: 'assistant', content: greeting }]);
     } catch (error) {
       console.error(error);
       setMessages([{ role: 'assistant', content: 'Sorry, I am having trouble connecting right now.' }]);
@@ -81,16 +128,17 @@ const LettaChat: React.FC<LettaChatProps> = ({ isOpen, onClose, fetchAiReport, c
   const handleSend = async () => {
     if (input.trim() === '' || !conversationId || !user) return;
     const userMessage: Message = { role: 'user', content: input };
+    const userInput = input; // Store the input before clearing it
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+      const apiUrl = (import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080').replace(/\/$/, '');
       const formData = new FormData();
       formData.append('conversation_id', conversationId);
       formData.append('user_id', user.id);
-      formData.append('message', input);
+      formData.append('message', userInput);
 
       const response = await fetch(`${apiUrl}/api/letta/conversation/chat`, {
         method: 'POST',
@@ -100,11 +148,13 @@ const LettaChat: React.FC<LettaChatProps> = ({ isOpen, onClose, fetchAiReport, c
       if (!response.ok) throw new Error('Failed to get response from Letta');
       const data = await response.json();
       
-      const assistantMessage: Message = { role: 'assistant', content: data.data.response.message };
+      // Format the response to be more natural and conversational
+      const formattedContent = formatLettaResponse(data.data.response.message);
+      const assistantMessage: Message = { role: 'assistant', content: formattedContent };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error(error);
-      setMessages((prev) => [...prev, { role: 'assistant', content: 'My apologies, I encountered an error. Could you try asking again?' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: "Sorry about that! Something went wrong on my end. Could you try asking me again? I'm here to help!" }]);
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +180,7 @@ const LettaChat: React.FC<LettaChatProps> = ({ isOpen, onClose, fetchAiReport, c
             <div className="flex items-center justify-between p-4 border-b border-gray-700/50">
               <h3 className="text-lg font-semibold text-white flex items-center">
                 <Brain size={20} className="mr-2 text-pink-400" />
-                Your Personal Coach (Letta)
+                Chat with Your Vocal Coach
               </h3>
               <button onClick={onClose} className="p-1 hover:bg-gray-700/50 rounded-full transition-colors">
                 <X size={20} className="text-gray-400" />
@@ -146,7 +196,9 @@ const LettaChat: React.FC<LettaChatProps> = ({ isOpen, onClose, fetchAiReport, c
                     </div>
                   )}
                   <div className={`max-w-md rounded-xl p-3 text-white ${msg.role === 'user' ? 'bg-blue-600' : 'bg-gray-800'}`}>
-                    {msg.content}
+                    <div className="whitespace-pre-wrap leading-relaxed">
+                      {msg.content}
+                    </div>
                   </div>
                   {msg.role === 'user' && (
                     <div className="w-8 h-8 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0">
@@ -165,7 +217,7 @@ const LettaChat: React.FC<LettaChatProps> = ({ isOpen, onClose, fetchAiReport, c
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
-                  placeholder="Ask your coach anything..."
+                  placeholder="What would you like to talk about?"
                   className="w-full bg-transparent p-3 focus:outline-none text-white"
                   disabled={isLoading}
                 />

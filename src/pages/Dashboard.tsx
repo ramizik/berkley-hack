@@ -6,30 +6,13 @@ import { useAuth } from '../context/AuthContext';
 import { TrendingUp, Mic, ArrowRight, MessageCircle, BookOpen, Brain, CheckCircle, Sparkles } from 'lucide-react';
 import EnhancedLettaWidget from '../components/letta/EnhancedLettaWidget';
 import LettaChat from '../components/letta/LettaChat';
-import AchievementCard from '../components/dashboard/AchievementCard';
-import { useProgressEvaluation } from '../lib/useVoiceAnalysis';
+
 
 const Dashboard: React.FC = () => {
   const { profile, loading } = useVocalProfile();
   const { user } = useAuth();
   const [isLettaOpen, setIsLettaOpen] = useState(false);
-  const { evaluateProgress, showAchievement, loading: evaluationLoading } = useProgressEvaluation();
-  const [showAchievementCard, setShowAchievementCard] = useState(false);
   const today = new Date();
-  
-  // Automatically evaluate progress when component mounts
-  useEffect(() => {
-    if (user?.id && !loading) {
-      evaluateProgress();
-    }
-  }, [user?.id, loading]);
-  
-  // Update showAchievementCard when evaluation completes
-  useEffect(() => {
-    if (!evaluationLoading && showAchievement) {
-      setShowAchievementCard(true);
-    }
-  }, [evaluationLoading, showAchievement]);
   
   return (
     <motion.div
@@ -54,14 +37,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      {/* Achievement Card - Shows when Letta agent detects progress */}
-      <AnimatePresence>
-        {showAchievementCard && (
-          <div className="mb-6 md:mb-8">
-            <AchievementCard onClose={() => setShowAchievementCard(false)} />
-          </div>
-        )}
-      </AnimatePresence>
+
       
       {/* Voice Recording Prompt for New Users */}
       {!loading && profile && !profile.voice_recorded && (

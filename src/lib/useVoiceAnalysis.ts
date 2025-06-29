@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
 import { PitchDetector } from 'pitchy';
-import { useAuth } from '../context/AuthContext';
 
 interface UseVoiceAnalysisOptions {
   onAnalysisComplete?: (result: any) => void;
@@ -331,6 +330,9 @@ export function useVoiceAnalysis(options?: UseVoiceAnalysisOptions) {
   };
 }
 
+// Achievement/Progress evaluation functionality removed
+// This was causing fetch errors when the backend was unavailable
+/*
 export const useProgressEvaluation = () => {
   const [loading, setLoading] = useState(false);
   const [showAchievement, setShowAchievement] = useState(false);
@@ -384,3 +386,4 @@ export const useProgressEvaluation = () => {
     error,
   };
 };
+*/

@@ -43,7 +43,7 @@ const EnhancedLettaWidget: React.FC = () => {
     
     try {
       setLoading(true);
-      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+      const apiUrl = (import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080').replace(/\/$/, '');
       const response = await fetch(`${apiUrl}/api/letta/dashboard/insights/${user.id}`);
       
       if (response.ok) {
