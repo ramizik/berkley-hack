@@ -139,9 +139,9 @@ export function useVoiceAnalysis(options?: UseVoiceAnalysisOptions) {
 
       // Auto-stop after 15 seconds
       setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
           console.log('[useVoiceAnalysis] Auto-stopping recording after 15 seconds');
-          mediaRecorder.stop();
+          stopRecording();
         }
       }, 15000);
 
@@ -329,61 +329,3 @@ export function useVoiceAnalysis(options?: UseVoiceAnalysisOptions) {
     resetRecording,
   };
 }
-
-// Achievement/Progress evaluation functionality removed
-// This was causing fetch errors when the backend was unavailable
-/*
-export const useProgressEvaluation = () => {
-  const [loading, setLoading] = useState(false);
-  const [showAchievement, setShowAchievement] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
-
-  const evaluateProgress = async () => {
-    if (!user?.id) {
-      setError('User not authenticated');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/letta/evaluate-progress/${user.id}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to evaluate progress: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setShowAchievement(data.showAchievement || false);
-      } else {
-        setError(data.error || 'Failed to evaluate progress');
-      }
-    } catch (error) {
-      console.error('Error evaluating progress:', error);
-      setError(error instanceof Error ? error.message : 'Failed to evaluate progress');
-      setShowAchievement(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return {
-    evaluateProgress,
-    showAchievement,
-    loading,
-    error,
-  };
-};
-*/
