@@ -95,7 +95,7 @@ const Progress: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+      const apiUrl = (import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080').replace(/\/$/, '');
       
       const response = await fetch(`${apiUrl}/api/vocal-reports/${user.id}/${dateStr}`);
       

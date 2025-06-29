@@ -108,7 +108,7 @@ const Practice: React.FC = () => {
 
     try {
       // Check if backend is available
-      const backendUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+      const backendUrl = (import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080').replace(/\/$/, '');
       
       try {
         const healthCheck = await fetch(`${backendUrl}/health`, { 
@@ -273,7 +273,7 @@ const Practice: React.FC = () => {
   // Auto-analyze when recording is complete (only once)
   useEffect(() => {
     if (recordingComplete && audioBlob && user && !isAnalyzing && !analysisComplete) {
-      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+      const apiUrl = (import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080').replace(/\/$/, '');
       analyzeVoice(user.id, apiUrl);
     }
   }, [recordingComplete, audioBlob, user, isAnalyzing, analysisComplete]); // Removed analyzeVoice from deps

@@ -8,7 +8,7 @@ const VAPI_VOICE_AGENT_ID = import.meta.env.VITE_VAPI_VOICE_AGENT_ID;
 const VAPI_BASE_URL = 'https://api.vapi.ai';
 
 // Fallback to backend API if VAPI is unavailable
-const BACKEND_API_URL = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080';
+const BACKEND_API_URL = (import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8080').replace(/\/$/, '');
 
 export interface VAPIMetrics {
   mean_pitch: number;
