@@ -66,7 +66,6 @@ const LiveCoach: React.FC = () => {
               <li>"How can I improve my breath control?"</li>
               <li>"What exercises help with pitch accuracy?"</li>
               <li>"How do I develop better vibrato?"</li>
-              <li>"Sing a line or two of any song, let Coach analyze your voice."</li>
             </ul>
           </div>
 
@@ -76,9 +75,9 @@ const LiveCoach: React.FC = () => {
             </div>
             <h3 className="text-xl font-semibold text-white mb-3 text-center">Performance Feedback</h3>
             <ul className="text-gray-400 text-base space-y-2">
+              <li>"Analyze my recent practice session"</li>
               <li>"What should I focus on improving?"</li>
-              <li>"Talk to it naturally, like you would do to real coach"</li>
-              <li>"What was my progress on 'DD-MM-YYYY'?"</li>
+              <li>"How is my vocal progress?"</li>
             </ul>
           </div>
 
@@ -91,7 +90,6 @@ const LiveCoach: React.FC = () => {
               <li>"What songs suit my voice type?"</li>
               <li>"Help me with this specific song"</li>
               <li>"Tips for different music genres"</li>
-              <li>"Ask Coach to sing a song XXX"</li>
             </ul>
           </div>
 
@@ -103,8 +101,7 @@ const LiveCoach: React.FC = () => {
             <ul className="text-gray-400 text-base space-y-2">
               <li>"Create a practice schedule for me"</li>
               <li>"Set vocal improvement goals"</li>
-              <li>"Ask related questions and talk in real-time"</li>
-              <li>"Interrupt coach whenever needed"</li>
+              <li>"Track my weekly progress"</li>
             </ul>
           </div>
         </div>
