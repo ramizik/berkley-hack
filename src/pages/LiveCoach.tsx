@@ -75,7 +75,7 @@ const LiveCoach: React.FC = () => {
             <h3 className="text-xl font-semibold text-white mb-3 text-center">Performance Feedback</h3>
             <ul className="text-gray-400 text-base space-y-2">
               <li>"What was my progress on DD-MM-YYYY"</li>
-              <li>"What should I focus on improving?"</li
+              <li>"What should I focus on improving?"</li>
               <li>"How is my vocal progress?"</li>
             </ul>
           </div>
