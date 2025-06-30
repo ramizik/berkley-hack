@@ -83,8 +83,6 @@ const Progress: React.FC = () => {
   const [fetchAiReports, setFetchAiReports] = useState<FetchAIReport[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reportSource, setReportSource] = useState<'cache' | 'generated' | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isLettaOpen, setIsLettaOpen] = useState(false);
 
   // Fetch Fetch AI reports
@@ -107,8 +105,6 @@ const Progress: React.FC = () => {
       const data = await response.json();
       if (data.success && data.data) {
         setFetchAiReports([data.data]);
-        setReportSource(data.source);
-        setLastUpdated(new Date());
       }
     } catch (err) {
       console.error('Error fetching reports:', err);
@@ -279,33 +275,6 @@ const Progress: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Report Source Indicator */}
-      {reportSource && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-4"
-        >
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-base ${
-            reportSource === 'cache' 
-              ? 'bg-blue-accent/20 text-blue-accent border border-blue-accent/30' 
-              : 'bg-purple-accent/20 text-purple-accent border border-purple-accent/30'
-          }`}>
-            {reportSource === 'cache' ? (
-              <CheckCircle size={14} className="mr-1" />
-            ) : (
-              <Sparkles size={14} className="mr-1" />
-            )}
-            {reportSource === 'cache' ? 'Cached Report' : 'Generated On-Demand'}
-            {lastUpdated && (
-              <span className="ml-2 text-sm opacity-75">
-                Updated {lastUpdated.toLocaleTimeString()}
-              </span>
-            )}
-          </div>
-        </motion.div>
-      )}
-      
       {/* Date Selection */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
