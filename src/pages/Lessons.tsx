@@ -237,7 +237,7 @@ const Lessons: React.FC = () => {
       duration: 18,
       rating: 4.5,
       completionRate: 0,
-      image: 'https://images.pexels.com/photos/7594461/pexels-photo-7594461.jpeg?auto=compress&cs=tinysrgb&w=600'
+      image: 'https://i.imgur.com/hXRaNKh.png?auto=compress&cs=tinysrgb&w=600'
     },
     {
       id: 4,
@@ -248,7 +248,7 @@ const Lessons: React.FC = () => {
       duration: 25,
       rating: 4.9,
       completionRate: 0,
-      image: 'https://images.pexels.com/photos/4046847/pexels-photo-4046847.jpeg?auto=compress&cs=tinysrgb&w=600'
+      image: 'https://i.imgur.com/ENUMjXi.png?auto=compress&cs=tinysrgb&w=600'
     },
     {
       id: 5,
@@ -259,7 +259,7 @@ const Lessons: React.FC = () => {
       duration: 22,
       rating: 4.7,
       completionRate: 0,
-      image: 'https://images.pexels.com/photos/3775126/pexels-photo-3775126.jpeg?auto=compress&cs=tinysrgb&w=600'
+      image: 'https://i.imgur.com/7o4WS00.png?auto=compress&cs=tinysrgb&w=600'
     },
     {
       id: 6,
@@ -270,7 +270,7 @@ const Lessons: React.FC = () => {
       duration: 30,
       rating: 4.9,
       completionRate: 0,
-      image: 'https://images.pexels.com/photos/4149303/pexels-photo-4149303.jpeg?auto=compress&cs=tinysrgb&w=600'
+      image: 'https://i.imgur.com/mIgYYwA.png?auto=compress&cs=tinysrgb&w=600'
     },
   ];
   
