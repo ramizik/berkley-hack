@@ -27,6 +27,7 @@ const LiveCoach: React.FC = () => {
           <p className="mb-2">Ask questions, get personalized advice, and receive guidance based on your progress.</p>
           <p className="mb-2">Ask Coach to correctly sing a song for you to hear proper vocal.</p>
           <p className="mb-2">Talk naturally, like you would with a real coach. Coach analyses your voice and is able to help improving it.</p>
+          <p className="mb-2">Powered by VAPI.</p>
         </div>
       </motion.div>
 
