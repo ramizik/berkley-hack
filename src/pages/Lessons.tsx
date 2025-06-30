@@ -215,7 +215,7 @@ const Lessons: React.FC = () => {
       duration: 15,
       rating: 4.8,
       completionRate: 0,
-      image: 'https://images.pexels.com/photos/3775126/pexels-photo-3775126.jpeg?auto=compress&cs=tinysrgb&w=600'
+      image: 'https://i.imgur.com/QEPvpF1.png?auto=compress&cs=tinysrgb&w=600'
     },
     {
       id: 2,
