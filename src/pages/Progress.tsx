@@ -619,18 +619,18 @@ const Progress: React.FC = () => {
                 <Clock size={18} className="mr-2 text-purple-accent" />
                 Practice Session Details
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-dark-lighter rounded-lg p-4 border border-dark-accent">
-                  <div className="text-base text-gray-400 mb-1">Total Sessions</div>
-                  <div className="text-2xl font-bold text-white">{getCurrentReport()?.practice_sessions}</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-dark-lighter rounded-lg p-5 border border-dark-accent hover:border-purple-accent/50 transition-all">
+                  <div className="text-base text-gray-400 mb-2">Total Sessions</div>
+                  <div className="text-3xl font-bold text-white">{getCurrentReport()?.practice_sessions}</div>
                 </div>
-                <div className="bg-dark-lighter rounded-lg p-4 border border-dark-accent">
-                  <div className="text-base text-gray-400 mb-1">Total Practice Time</div>
-                  <div className="text-2xl font-bold text-white">{getCurrentReport()?.total_practice_time} min</div>
+                <div className="bg-dark-lighter rounded-lg p-5 border border-dark-accent hover:border-blue-accent/50 transition-all">
+                  <div className="text-base text-gray-400 mb-2">Total Practice Time</div>
+                  <div className="text-3xl font-bold text-white">{getCurrentReport()?.total_practice_time} min</div>
                 </div>
-                <div className="bg-dark-lighter rounded-lg p-4 border border-dark-accent">
-                  <div className="text-base text-gray-400 mb-1">Best Time of Day</div>
-                  <div className="text-2xl font-bold text-white">{getCurrentReport()?.best_time_of_day}</div>
+                <div className="bg-dark-lighter rounded-lg p-5 border border-dark-accent hover:border-green-500/50 transition-all">
+                  <div className="text-base text-gray-400 mb-2">Best Time of Day</div>
+                  <div className="text-3xl font-bold text-white">{getCurrentReport()?.best_time_of_day}</div>
                 </div>
               </div>
             </div>
