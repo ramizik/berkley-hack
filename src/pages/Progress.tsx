@@ -287,6 +287,9 @@ const Progress: React.FC = () => {
             <p className="text-gray-400 text-base mt-1">
               Choose a day from your past to review your vocal progress and discuss it with your AI coach.
             </p>
+              <p className="text-gray-400 text-base mt-1">
+              Powered by Letta AI.
+            </p>
           </div>
           <div className="flex items-center space-x-2">
             <button
