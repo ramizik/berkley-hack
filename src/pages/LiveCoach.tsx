@@ -19,8 +19,8 @@ const LiveCoach: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">AI Voice Coach</h1>
-        <p className="text-gray-300 text-xl mb-4">Chat with your personal AI vocal coach</p>
+        <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">AI Vocal Coach</h1>
+        <p className="text-gray-300 text-xl mb-4">Talk to your AI vocal coach</p>
         
         {/* Description */}
         <div className="text-gray-400 text-base leading-relaxed max-w-3xl">
@@ -43,7 +43,7 @@ const LiveCoach: React.FC = () => {
           className="px-8 py-4 bg-gradient-to-r from-purple-accent to-blue-accent text-white font-semibold rounded-lg hover:shadow-lg transition-all flex items-center space-x-3 text-xl mx-auto"
         >
           <PhoneCall size={24} />
-          <span>Start Voice Chat</span>
+          <span>Talk to Coach LIVE</span>
         </motion.button>
       </motion.div>
 
