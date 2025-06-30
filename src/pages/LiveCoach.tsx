@@ -25,8 +25,7 @@ const LiveCoach: React.FC = () => {
         {/* Description */}
         <div className="text-gray-400 text-base leading-relaxed max-w-3xl">
           <p className="mb-2">Ask questions, get personalized advice, and receive guidance based on your progress.</p>
-          <p className="mb-2">The coach remembers your journey and adapts to your needs.</p>
-          <p>It's like texting with a real teacher who knows your voice.</p>
+          <p className="mb-2">Ask Coach to correctly sing a song for you to hear proper vocal. Talk naturally, like you would with a real coach. Coach analyses your voice and is able to help improving it.</p>
         </div>
       </motion.div>
 
@@ -75,8 +74,8 @@ const LiveCoach: React.FC = () => {
             </div>
             <h3 className="text-xl font-semibold text-white mb-3 text-center">Performance Feedback</h3>
             <ul className="text-gray-400 text-base space-y-2">
-              <li>"Analyze my recent practice session"</li>
-              <li>"What should I focus on improving?"</li>
+              <li>"What was my progress on DD-MM-YYYY"</li>
+              <li>"What should I focus on improving?"</li
               <li>"How is my vocal progress?"</li>
             </ul>
           </div>
