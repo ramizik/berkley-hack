@@ -25,7 +25,8 @@ const LiveCoach: React.FC = () => {
         {/* Description */}
         <div className="text-gray-400 text-base leading-relaxed max-w-3xl">
           <p className="mb-2">Ask questions, get personalized advice, and receive guidance based on your progress.</p>
-          <p className="mb-2">Ask Coach to correctly sing a song for you to hear proper vocal. Talk naturally, like you would with a real coach. Coach analyses your voice and is able to help improving it.</p>
+          <p className="mb-2">Ask Coach to correctly sing a song for you to hear proper vocal.</p>
+          <p className="mb-2">Talk naturally, like you would with a real coach. Coach analyses your voice and is able to help improving it.</p>
         </div>
       </motion.div>
 
