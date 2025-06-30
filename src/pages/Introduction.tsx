@@ -105,7 +105,7 @@ const Introduction: React.FC = () => {
           }
         `}
       </style>
-      <div class="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-4 right-4 z-50">
         <a href="https://bolt.new/?rid=q2wnel" target="_blank" rel="noopener noreferrer" 
            className="block transition-all duration-300 hover:shadow-2xl">
           <img src="https://github.com/kickiniteasy/bolt-hackathon-badge/blob/main/src/public/bolt-badge/black_circle_360x360/black_circle_360x360.png?raw=true" 
